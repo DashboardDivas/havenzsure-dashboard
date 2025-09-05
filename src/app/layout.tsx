@@ -1,17 +1,20 @@
-// src/app/layout.tsx
+import type { Metadata } from 'next';
+import './globals.css';
+import Providers from '@/components/layout/Providers';
+import AppShell from '@/components/layout/AppShell';
+
+export const metadata: Metadata = {
+  title: 'HavenzSure',
+  description: 'MUI + Next.js prototype',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        {(() => {
-          const Providers = require('@/components/layout/Providers').default;
-          const AppShell = require('@/components/layout/AppShell').default;
-          return (
-            <Providers>
-              <AppShell>{children}</AppShell>
-            </Providers>
-          );
-        })()}
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );
