@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DataGrid, GridColDef, useGridApiRef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef} from "@mui/x-data-grid";
 import { fetchWorkOrders } from "@/lib/fakeApi";
 import { WorkOrder, WorkOrderStatus } from "@/types/workOrder";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,6 @@ import StatusChip from "@/components/ui/StatusChip";
 export default function HistoryGrid() {
   const [rows, setRows] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const apiRef = useGridApiRef();
   const router = useRouter();
 
   useEffect(() => {
@@ -44,7 +43,6 @@ const columns: GridColDef[] = [
     <div>
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
-          apiRef={apiRef}
           rows={filteredRows.map((row: WorkOrder) => ({
             ...row,
             id: row.WorkOrderID,
