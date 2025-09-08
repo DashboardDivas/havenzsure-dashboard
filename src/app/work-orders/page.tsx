@@ -25,7 +25,11 @@ const columns: GridColDef[] = [
     field: "Status",
     headerName: "Status",
     width: 180,
-    renderCell: (params) => <StatusChip status={params.value} />,
+    renderCell: (params) => (
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center"}}>
+        <StatusChip status={params.value} />
+      </div>
+    ),
   },
   { field: "DateReceived", headerName: "Date Received", width: 180 },
   { field: "DateUpdate", headerName: "Date Update", width: 180 },
@@ -94,6 +98,7 @@ const columns: GridColDef[] = [
             router.push(`/work-orders/${params.row.WorkOrderID}`);
           }}
           style={{ cursor: "pointer" }}
+          rowHeight={50}
         />
       </div>
     </div>

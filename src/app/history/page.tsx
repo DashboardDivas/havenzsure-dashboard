@@ -21,12 +21,16 @@ export default function HistoryGrid() {
 
 const columns: GridColDef[] = [
   { field: "WorkOrderID", headerName: "WorkOrder ID", width: 120 },
-  {
-    field: "Status",
-    headerName: "Status",
-    width: 180,
-    renderCell: (params) => <StatusChip status={params.value} />,
-  },
+    {
+      field: "Status",
+      headerName: "Status",
+      width: 180,
+      renderCell: (params) => (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center"}}>
+          <StatusChip status={params.value} />
+        </div>
+      ),
+    },
   { field: "DateReceived", headerName: "Date Received", width: 180 },
   { field: "DateUpdate", headerName: "Date Update", width: 180 },
   { field: "FirstName", headerName: "First Name", width: 150 },
