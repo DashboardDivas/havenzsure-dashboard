@@ -9,13 +9,11 @@ import StatusChip from "@/components/ui/StatusChip";
 
 export default function WorkOrdersGrid() {
   const [rows, setRows] = useState<WorkOrder[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     fetchWorkOrders().then((data) => {
       setRows(data);
-      setLoading(false);
     });
   }, []);
 
@@ -51,9 +49,7 @@ const columns: GridColDef[] = [
   ];
 
   const filteredRows =
-    activeTab === "ALL"
-      ? rows
-      : rows.filter((row) => row.Status === activeTab);
+    activeTab === "ALL" ? rows : rows.filter((row) => row.Status === activeTab);
 
   return (
     <div>
@@ -87,7 +83,6 @@ const columns: GridColDef[] = [
           columns={columns.map((col) => {
             return { ...col, disableColumnMenu: true };
           })}
-          loading={loading}
           initialState={{
             pagination: {
               paginationModel: { pageSize: 5, page: 0 },
