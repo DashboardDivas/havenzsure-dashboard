@@ -45,4 +45,3 @@ export default function StatusChip({ status }: StatusChipProps) {
     {status}
   </span>
 );
-}
