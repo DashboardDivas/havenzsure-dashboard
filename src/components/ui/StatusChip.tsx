@@ -1,41 +1,47 @@
-import type React from "react"
-import { cn } from "@/lib/utils";
+"use client";
 
-export type StatusType =
-  | "waiting-for-inspection"
-  | "in-progress"
-  | "follow-up-required"
-  | "completed"
-  | "active"
-  | "inactive"
+import { WorkOrderStatus } from "@/types/workOrder";
 
 interface StatusChipProps {
-  status: StatusType
-  children: React.ReactNode
-  className?: string
+  status: WorkOrderStatus;
 }
 
-const statusStyles: Record<StatusType, string> = {
-  "waiting-for-inspection": "bg-gray-100 text-gray-800 border-gray-300",
-  "in-progress": "bg-blue-100 text-blue-800 border-blue-300",
-  "follow-up-required": "bg-red-100 text-red-800 border-red-300",
-  completed: "bg-green-100 text-green-800 border-green-300",
-  active: "bg-green-100 text-green-800 border-green-300",
-  inactive: "bg-gray-100 text-gray-800 border-gray-300",
-}
+export default function StatusChip({ status }: StatusChipProps) {
+  const getStyles = (status: WorkOrderStatus) => {
+    switch (status) {
+      case WorkOrderStatus.WaitingForInspection:
+        return { backgroundColor: "#f0f0f0", borderColor: "#000", color: "#000"};
+      case WorkOrderStatus.InProgress:
+        return { backgroundColor: "#e0f0ff", borderColor: "#000", color: "#000"};
+      case WorkOrderStatus.FollowUpRequired:
+        return { backgroundColor: "#ffe0e0", borderColor: "#000", color: "#000"};
+      case WorkOrderStatus.Completed:
+        return { backgroundColor: "#e0ffe0", borderColor: "#000", color: "#000"};
+      case WorkOrderStatus.WaitingForInformation:
+        return { backgroundColor: "#fff7e0", borderColor: "#000", color: "#000"};
+      default:
+        return { backgroundColor: "#fff", borderColor: "#000", color: "#000"};
+    }
+  };
 
-export function StatusChip({ status, children, className }: StatusChipProps) {
+  const styles = getStyles(status);
+
   return (
-    <span
-      className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border",
-        statusStyles[status],
-        className,
-      )}
-    >
-      {children}
-    </span>
-  )
-}
-
-export default StatusChip
+  <span
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "4px 8px",
+      borderRadius: 4,
+      border: `1px solid ${styles.borderColor}`,
+      backgroundColor: styles.backgroundColor,
+      color: styles.color,
+      fontSize: 14,
+      fontWeight: 500,
+      maxHeight: 40
+    }}
+  >
+    {status}
+  </span>
+);
