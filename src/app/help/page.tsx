@@ -9,7 +9,6 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 export default function HelpPage() {
-  // —— 简单的“是否管理员”判定（demo：localStorage 中 hz_fake_user_role === 'admin'）
   const [isAdmin, setIsAdmin] = React.useState(false);
   React.useEffect(() => {
     try {
@@ -18,7 +17,6 @@ export default function HelpPage() {
     } catch {}
   }, []);
 
-  // —— 删除请求对话框（纯 mock）
   const [open, setOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [details, setDetails] = React.useState("");
@@ -26,7 +24,6 @@ export default function HelpPage() {
 
   const submitDeletionRequest = (e: React.FormEvent) => {
     e.preventDefault();
-    // 这里不做真实提交，只是演示
     setSent(true);
     setTimeout(() => setOpen(false), 700);
   };
