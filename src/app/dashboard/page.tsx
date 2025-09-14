@@ -2,6 +2,7 @@
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import StatusChip from '@/components/ui/StatusChip';
 import EmptyState from '@/components/ui/EmptyState';
+import UserList from '@/components/ui/UserList';
 
 export default function Page() {
   return (
@@ -9,7 +10,6 @@ export default function Page() {
       Dashboard placeholder
       <div style={{ marginTop: 12 }}>
         <PrimaryButton />
-        <StatusChip />
         <EmptyState />
       </div>
     </div>
