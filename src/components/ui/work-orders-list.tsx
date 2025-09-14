@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
 import { ChevronDown } from "lucide-react"
-import StatusChip, { type StatusType } from "@/components/ui/StatusChip"
+import StatusChip from "@/components/ui/StatusChip"
 import { StatusTab } from "@/components/ui/Tabs"
 import { Container, Box } from "@mui/material"
 
