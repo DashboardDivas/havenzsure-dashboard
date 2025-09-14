@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 
-interface ImageFile {
-  url: string;
+type ImageFile = {
   file: File;
-}
+  url: string;
+};
 
 export default function AIScanTab() {
   const MAXIMUM_IMAGES = 12;
@@ -11,22 +11,20 @@ export default function AIScanTab() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFilesChange = (files: FileList | null) => {
-    if (!files) return;
-    var allowed = MAXIMUM_IMAGES - images.length;
-    var newImages: ImageFile[] = [];
-    for (var i = 0; i < files.length && newImages.length < allowed; i++) {
-      if (files[i].type.startsWith("image/")) {
-        newImages.push({
-          file: files[i],
-          url: URL.createObjectURL(files[i])
-        });
+    if (files == null || files.length == 0) return; 
+    const allowed = MAXIMUM_IMAGES - images.length;
+    const newImages: ImageFile[] = [];
+    for (let i = 0; i < files.length; i++) {
+      if (newImages.length >= allowed) break;
+      const imgFile = files[i]; 
+      const myImgFile: ImageFile = {
+        file: imgFile,
+        url: URL.createObjectURL(imgFile)
       }
+      newImages.push(myImgFile);
     }
-    setImages(function (prev) {
-      var all = prev.concat(newImages);
-      if (all.length > MAXIMUM_IMAGES) {
-        all = all.slice(0, MAXIMUM_IMAGES);
-      }
+    setImages((prev) => {
+      let all = prev.concat(newImages);
       return all;
     });
   };
