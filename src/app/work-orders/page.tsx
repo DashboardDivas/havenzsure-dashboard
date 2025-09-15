@@ -21,7 +21,7 @@ export default function WorkOrdersGrid() {
       field: "Status",
       headerName: "Status",
       width: 180,
-      renderCell: (params) => ( 
+      renderCell: (params) => (
         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center" }}>
           <StatusChip status={params.value} />
         </div>
@@ -51,24 +51,21 @@ export default function WorkOrdersGrid() {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 30, marginBottom: 16 }}>
         {statusTabs.map((status) => (
           <button
             key={status}
             onClick={() => setActiveTab(status)}
             style={{
               padding: "8px 16px",
-              border: "none",
               borderBottom: activeTab === status ? "2px solid #1976d2" : "2px solid transparent",
-              background: "none",
               color: activeTab === status ? "#1976d2" : "#333",
               fontWeight: activeTab === status ? "bold" : "normal",
               cursor: "pointer",
-              outline: "none",
               fontSize: 16,
             }}
           >
-            {status === "ALL" ? "All" : status}
+            {status}
           </button>
         ))}
       </div>

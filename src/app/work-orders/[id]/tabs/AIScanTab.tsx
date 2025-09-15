@@ -11,12 +11,12 @@ export default function AIScanTab() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFilesChange = (files: FileList | null) => {
-    if (files == null || files.length == 0) return; 
+    if (files == null || files.length == 0) return;
     const allowed = MAXIMUM_IMAGES - images.length;
     const newImages: ImageFile[] = [];
     for (let i = 0; i < files.length; i++) {
       if (newImages.length >= allowed) break;
-      const imgFile = files[i]; 
+      const imgFile = files[i];
       const myImgFile: ImageFile = {
         file: imgFile,
         url: URL.createObjectURL(imgFile)
@@ -35,14 +35,19 @@ export default function AIScanTab() {
   };
 
   const handleUploadClick = () => {
-    inputRef.current?.click();
+    const inputComponent = inputRef.current;
+    if (inputComponent != null) {
+      inputComponent.click();
+    }
   };
 
-  const handleRemoveImage = (idx: number) => {
-    setImages((prev) => {
-      URL.revokeObjectURL(prev[idx].url); // Before we remove the image, we need to release the URL object
-      return prev.filter((imageFile, imageIndex) => imageIndex !== idx);
-    });
+  const handleRemoveImage = (idxToBeDeleted: number) => {
+    URL.revokeObjectURL(images[idxToBeDeleted].url); // Before we remove the image, we need to release the URL object
+    function filterLogic(imageFileItem: ImageFile, imageIdx: number) {
+      return imageIdx != idxToBeDeleted;
+    }
+    const filteredImages = images.filter(filterLogic);
+    setImages(filteredImages);
   };
 
   return (
@@ -66,7 +71,7 @@ export default function AIScanTab() {
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gridTemplateRows: "repeat(3, minmax(0, 1fr))",
-              gap: "2rem",
+              gap: "32px",
               height: "384px",
               alignItems: "center",
               justifyItems: "center",
@@ -92,18 +97,25 @@ export default function AIScanTab() {
                 <div
                   key={idx}
                   className="w-full bg-white rounded-2xl shadow-lg flex items-center justify-center overflow-hidden relative"
-                  style={{ aspectRatio: "1 / 1", maxHeight: "128px", border: '2px solid #e3eafc' }}
+                  style={{ maxHeight: "128px", border: '2px solid #e3eafc' }}
                 >
                   <img src={img.url} alt={`img-${idx}`} className="object-cover w-full h-full" />
-                  <button
+                    <button
                     type="button"
                     onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-full p-1.5 hover:bg-red-500 hover:text-white text-gray-700 shadow-lg"
-                    style={{ zIndex: 2, lineHeight: 1, fontSize: "1.25rem" }}
-                    aria-label="Remove image"
-                  >
+                    style={{
+                      position: "absolute",
+                      top: "3px",
+                      right: "3px",
+                      background: "#fff",
+                      borderRadius: "9999px",
+                      padding: "4px",
+                      lineHeight: 1,
+                      fontSize: "16px",
+                    }}
+                    >
                     ×
-                  </button>
+                    </button>
                 </div>
               ))
             )}
@@ -121,7 +133,7 @@ export default function AIScanTab() {
         <div className="flex items-center py-2 w-full" style={{ flexBasis: "10%" }}>
           <div className="flex-1" />
           <button
-            className="px-6 py-2 bg-[#1769ff] text-white rounded-xl text-lg font-semibold hover:bg-[#0046b8] transition-colors duration-150 mx-4"
+            className="px-6 py-2 bg-[#1769ff] text-white rounded-xl text-lg font-semibold hover:bg-[#0046b8]"
             onClick={handleUploadClick}
             disabled={images.length >= MAXIMUM_IMAGES}
             style={{ minWidth: 160 }}
@@ -130,7 +142,7 @@ export default function AIScanTab() {
           </button>
           <div className="flex-1" />
           <button
-            className="px-6 py-2 bg-[#1769ff] text-white rounded-xl text-lg font-semibold hover:bg-[#0046b8] transition-colors duration-150 mx-4"
+            className="px-6 py-2 bg-[#1769ff] text-white rounded-xl text-lg font-semibold hover:bg-[#0046b8]"
             style={{ minWidth: 160 }}
           >
             Use Scanner
@@ -140,7 +152,7 @@ export default function AIScanTab() {
       </div>
       <div className="flex items-center justify-center py-4" style={{ flexBasis: "10%" }}>
         <button
-          className={`px-8 py-3 rounded-2xl text-xl font-bold transition-colors duration-150 ${images.length === 0
+          className={`px-8 py-3 rounded-2xl text-xl font-bold ${images.length === 0
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-[#1769ff] text-white hover:bg-[#0046b8]"}`}
           style={{ minWidth: 260 }}
