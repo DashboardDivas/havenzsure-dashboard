@@ -1,14 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { ThemeNameContext } from '@/components/layout/Providers';
 import type { ThemeName } from '@/lib/theme';
@@ -18,7 +11,7 @@ export default function SettingsPage() {
   if (!ctx) return null;
 
   const handleChange = (event: SelectChangeEvent) => {
-    const value = event.target.value as ThemeName; // SelectChangeEvent value is always string
+    const value = event.target.value as ThemeName;
     ctx.setThemeName(value);
   };
 

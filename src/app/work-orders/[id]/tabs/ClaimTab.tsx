@@ -1,3 +1,7 @@
+// This is a placeholder created by ChatGPT.
+// Please replace it with actual functionality.
+// Prompt: Create placeholders for ClaimTab, AIScanTab, LogTab, OverviewTab, PaymentTab and QuoteTab in WorkorderTab.
+
 export default function ClaimTab() {
   return (
     <div className="p-4 text-gray-500">

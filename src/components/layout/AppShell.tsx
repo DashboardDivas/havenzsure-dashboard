@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { AppBar, Box, CssBaseline, Toolbar, Typography } from '@mui/material';
-import Sidebar, { drawerWidth } from './Sidebar';
+import Sidebar from './Sidebar';
 import { NAV_ITEMS } from '@/config/routes';
 import { usePathname } from 'next/navigation';
 

@@ -1,4 +1,5 @@
 import { WorkOrder, WorkOrderStatus } from "../types/workOrder";
+import {Shop, ShopStatus} from "../types/shop";
 
 // Mock data
 const mockWorkOrders: WorkOrder[] = [
@@ -77,4 +78,194 @@ const mockWorkOrders: WorkOrder[] = [
 // Mock API function
 export function fetchWorkOrders(): WorkOrder[] {
   return mockWorkOrders;
+}
+
+//Mock data for shops
+
+// S002-S009 ARE CREATED BY CHATGPT.
+
+//PROMPT: Finish SHOP INFO FROM S002 TO S009 BASED ON THE FORMAT OF S001.
+
+const mockShops: Shop[] = [
+
+    {
+
+        ShopId: "S001",
+
+        Name:"Shop One",
+
+        Status: ShopStatus.Active,
+
+        Address:"123 Main ST, Calgary, AB",
+
+        PostalCode:"T1X 1Y1",
+
+        ContactPerson: "Name One",
+
+        ContactEmail: "email.one@example.com"
+
+    },
+
+    {
+
+        ShopId: "S002",
+
+        Name: "Prairie Auto Works",
+
+        Status: ShopStatus.Active,
+
+        Address: "200 9 Ave SW, Calgary, AB",
+
+        PostalCode: "T2P 2M5",
+
+        ContactPerson: "Alice Johnson",
+
+        ContactEmail: "alice.johnson@example.com",
+
+    },
+
+    {
+
+        ShopId: "S003",
+
+        Name: "Foothills Collision Center",
+
+        Status: ShopStatus.Inactive,
+
+        Address: "8900 14 St SW, Calgary, AB",
+
+        PostalCode: "T2V 1P6",
+
+        ContactPerson: "Bob Smith",
+
+        ContactEmail: "bob.smith@example.com",
+
+    },
+
+    {
+
+        ShopId: "S004",
+
+        Name: "Riverbend Repair Garage",
+
+        Status: ShopStatus.Active,
+
+        Address: "55 Riverbend Dr SE, Calgary, AB",
+
+        PostalCode: "T2C 3X1",
+
+        ContactPerson: "Carol White",
+
+        ContactEmail: "carol.white@example.com",
+
+    },
+
+    {
+
+        ShopId: "S005",
+
+        Name: "North Peak Auto Body",
+
+        Status: ShopStatus.Inactive,
+
+        Address: "1234 10 St NW, Calgary, AB",
+
+        PostalCode: "T2K 2Z9",
+
+        ContactPerson: "David Lee",
+
+        ContactEmail: "david.lee@example.com",
+
+    },
+
+    {
+
+        ShopId: "S006",
+
+        Name: "Horizon Dent & Frame",
+
+        Status: ShopStatus.Active,
+
+        Address: "742 Evergreen Rd SW, Calgary, AB",
+
+        PostalCode: "T2Y 0J9",
+
+        ContactPerson: "Emily Brown",
+
+        ContactEmail: "emily.brown@example.com",
+
+    },
+
+    {
+
+        ShopId: "S007",
+
+        Name: "Stampede Auto Service",
+
+        Status: ShopStatus.Inactive,
+
+        Address: "450 4 St SE, Calgary, AB",
+
+        PostalCode: "T2G 1Y5",
+
+        ContactPerson: "Frank Wilson",
+
+        ContactEmail: "frank.wilson@example.com",
+
+    },
+
+    {
+
+        ShopId: "S008",
+
+        Name: "Chinook Paint & Body",
+
+        Status: ShopStatus.Active,
+
+        Address: "100 Chinook Centre, Calgary, AB",
+
+        PostalCode: "T2H 0K5",
+
+        ContactPerson: "Grace Taylor",
+
+        ContactEmail: "grace.taylor@example.com",
+
+    },
+
+    {
+
+        ShopId: "S009",
+
+        Name: "Bow Valley Motors",
+
+        Status: ShopStatus.Inactive,
+
+        Address: "300 Bow Valley Trail, Calgary, AB",
+
+        PostalCode: "T2P 3N4",
+
+        ContactPerson: "Henry Davis",
+
+        ContactEmail: "henry.davis@example.com",
+
+    },
+
+]
+
+
+
+// Mock API function for shops
+
+export function fetchShops(): Promise<Shop[]> {
+
+    return new Promise((resolve) => {
+
+        setTimeout(() => {
+
+            resolve(mockShops);
+
+        }, 500); // simulate network delay, as what have done for workorder above
+
+    });
+
 }
