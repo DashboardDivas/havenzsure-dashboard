@@ -17,4 +17,20 @@ export interface WorkOrder {
     Email: string;
     Phone: string;
     VIN: string;
+
+     // Customer Info
+  Address: string;
+  City: string;
+  State: string;
+  ZIP: string;
+
+  // Vehicle Info
+  Make: string;
+  Model: string;
+  BodyStyle: string;
+  Year: string;
+  Color: string;
+  DamageDate: string;
+  PlateNumber: string;
+
 }
