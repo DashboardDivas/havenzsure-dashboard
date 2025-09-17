@@ -1,9 +1,8 @@
-// components/ui/Button.tsx
-
 "use client";
 
 import React from "react";
 import MuiButton from "@mui/material/Button";
+
 
 type ButtonProps = {
   children: React.ReactNode;
