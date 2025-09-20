@@ -402,6 +402,7 @@ export const mockClaim: Claim = {
   "Insurance Claimed": true,
   "Claim Approved": false,
   Claim: "#123456",
+  Note: "Customer to provide additional documents.",
 };
 
 export function fetchClaim(): Claim {

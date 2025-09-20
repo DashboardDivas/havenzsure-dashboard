@@ -80,6 +80,23 @@ export default function ClaimTab() {
             placeholder="Enter claim details"
           />
         </div>
+
+        {/* Note - textarea */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="claim-note" className="text-sm font-medium text-gray-700">
+            Note
+          </label>
+          <textarea
+            id="claim-note"
+            className="rounded border border-gray-300 p-2 text-sm"
+            rows={4}
+            value={claim.Note}
+            onChange={(e) =>
+              setClaim((prev: Claim | null) => (prev ? { ...prev, Note: e.target.value } : prev))
+            }
+            placeholder="Enter note"
+          />
+        </div>
       </div>
     </div>
   );

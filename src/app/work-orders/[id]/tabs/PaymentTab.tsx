@@ -1,5 +1,8 @@
 
+import { useState } from "react";
+
 export default function PaymentTab() {
+  const [note, setNote] = useState("This is the payment note.");
   return (
     <div className="p-4 text-gray-800">
       <h2 className="text-lg font-semibold mb-4">Payment & Dispatch</h2>
@@ -56,6 +59,19 @@ export default function PaymentTab() {
           <label htmlFor="paid" className="text-sm font-medium">
             Payment Completed
           </label>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="payment-note" className="text-sm font-medium text-gray-700">
+            Note
+          </label>
+          <textarea
+            id="payment-note"
+            className="rounded border border-gray-300 p-2 text-sm"
+            rows={4}
+            onChange={(e) => setNote(e.target.value)}
+            value={note}
+            placeholder="Enter note"
+          />
         </div>
       </form>
     </div>

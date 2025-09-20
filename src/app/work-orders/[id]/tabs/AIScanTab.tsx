@@ -126,27 +126,30 @@ export default function AIScanTab() {
             )}
           </div>
 
-          {loading && (
+            {loading && (
             <div
-              className="absolute inset-0 flex items-center justify-center"
+              className="absolute inset-0 flex flex-col items-center justify-center"
               style={{
-                background: "rgba(255,255,255,0.65)",
-                pointerEvents: "auto",
+              background: "rgba(255,255,255,0.65)",
+              pointerEvents: "auto",
               }}
             >
               <div
-                className="animate-spin rounded-full"
-                style={{
-                  height: "128px",
-                  width: "128px",
-                  border: "10px solid #cfe0ff",
-                  borderTopColor: "#1769ff",
-                }}
-                aria-label="Loading"
-                role="status"
+              className="animate-spin rounded-full"
+              style={{
+                height: "128px",
+                width: "128px",
+                border: "10px solid #cfe0ff",
+                borderTopColor: "#1769ff",
+              }}
+              aria-label="Loading"
+              role="status"
               />
+              <div className="mt-4 text-[#222e50] text-lg font-semibold" aria-live="polite">
+              Loading...
+              </div>
             </div>
-          )}
+            )}
 
           <input
             ref={inputRef}
@@ -191,7 +194,7 @@ export default function AIScanTab() {
           onClick={handleStartOrCancel}
           disabled={!loading && images.length === 0}
         >
-          {loading ? "Cancel Dection" : "Start Detection"}
+          {loading ? "Cancel Detection" : "Start Detection"}
         </button>
       </div>
     </div>
