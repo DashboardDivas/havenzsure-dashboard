@@ -24,14 +24,6 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    setError(null);
-
-    if (remember) {
-      localStorage.setItem("hz_fake_auth", "true");
-      localStorage.setItem("hz_fake_user", JSON.stringify({ email }));
-    }
-
     router.push("/dashboard");
   };
 

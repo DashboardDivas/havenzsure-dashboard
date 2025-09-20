@@ -46,13 +46,13 @@ export default function StatusChip({ status }: StatusChipProps) {
         };
 
       // ---- shop status ----
-      case ShopStatus.Active:
+      case "active":
         return {
           backgroundColor: theme.palette.success.main,
           borderColor: theme.palette.success.main,
           color: theme.palette.getContrastText(theme.palette.success.main),
         };
-      case ShopStatus.Inactive:
+      case "inactive":
         return {
           backgroundColor: theme.palette.grey[300] ?? theme.palette.divider,
           borderColor: theme.palette.divider,

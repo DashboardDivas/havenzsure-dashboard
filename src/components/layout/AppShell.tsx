@@ -10,6 +10,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const hideSidebar = pathname === '/' || pathname?.startsWith('/login');
+  //our current login page is actually at /, but we might need to move it to /login for auth issues
+  //if so, update the above line
 
   return (
     <Box sx={{ display: 'flex' }}>

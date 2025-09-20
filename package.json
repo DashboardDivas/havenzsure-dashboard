@@ -16,6 +16,7 @@
     "@mui/material-nextjs": "^7.3.2",
     "@mui/x-data-grid": "^8.11.1",
     "lucide-react": "^0.544.0",
+    "msw": "^2.11.2",
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -32,5 +33,10 @@
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

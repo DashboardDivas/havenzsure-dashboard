@@ -1,6 +1,6 @@
 // This file is crucial to theming. Please read the comments carefully if you plan to modify it:
-//Related files: /settings/page.tsx, src/lib/theme.ts, src/app/layout.tsx
-//(Explanations are provided by ChatGPT)
+// Related files: /settings/page.tsx, src/lib/theme.ts, src/app/layout.tsx
+// (Explanations are provided by ChatGPT)
 
 // ========== App Theme Providers (Next.js App Router + MUI) ==========
 // PURPOSE
@@ -8,6 +8,9 @@
 // This file centralizes all app-level providers required for MUI in the Next.js
 // App Router (app/) environment AND exposes a typed React Context so that any
 // page/component (e.g. /settings) can read & change the current theme.
+//
+// Additionally, in DEV it can start MSW (Mock Service Worker) to mock backend
+// APIs when NEXT_PUBLIC_API_MOCKING=enabled.
 
 //   KEY DEPENDENCIES & HOW THEY CONNECT
 //    -----------------------------------
@@ -16,18 +19,18 @@
 //          `Providers` stores only a string-like `themeName` in state and uses
 //          `getTheme(themeName)` to obtain the full MUI theme object for
 //          `ThemeProvider`.
-  
+//
 //    - `/settings/page.tsx`:
 //        • Uses `React.useContext(ThemeNameContext)` to read `themeName` and call
 //          `setThemeName(nextName)`. This is the UI for switching themes.
 //          Changing the context state here triggers `Providers` to re-render with
 //          a new MUI theme, updating the whole app instantly.
-  
+//
 //    - `src/app/layout.tsx` (App Shell):
 //        • Should wrap the entire app tree with `<Providers>{children}</Providers>`.
 //          That ensures all pages/components can safely consume `ThemeNameContext`
 //          and also receive MUI styles (baseline + theme tokens).
-  
+//
 //    DATA FLOW (USER ACTION → GLOBAL THEME)
 //    --------------------------------------
 //    1) User selects a theme on /settings (Select → onChange).
@@ -36,7 +39,7 @@
 //    4) Providers calls `getTheme(themeName)` and re-renders `ThemeProvider`.
 //    5) Entire app now receives the new theme tokens (colors/shape/etc.).
 //    6) New `themeName` is persisted to `localStorage` for future reloads.
- 
+
 'use client';
 
 import * as React from 'react';
@@ -58,6 +61,37 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   // default to BlueTech; read persisted value on client to avoid SSR mismatch
   const [themeName, setThemeName] = React.useState<ThemeName>('BlueTech');
 
+  // ---- MSW: start only once when enabled ----
+  const mswStartedRef = React.useRef(false);
+  React.useEffect(() => {
+    // Only in browser, only when explicitly enabled
+    if (
+      typeof window !== 'undefined' &&
+      process.env.NEXT_PUBLIC_API_MOCKING === 'enabled' &&
+      !mswStartedRef.current
+    ) {
+      mswStartedRef.current = true;
+      (async () => {
+        try {
+          const { worker } = await import('@/mocks/browser');
+          await worker.start({
+            serviceWorker: { url: '/mockServiceWorker.js' }, // must exist in /public
+            onUnhandledRequest: 'bypass', // let non-mocked requests pass through
+          });
+          if (process.env.NODE_ENV !== 'production') {
+            // eslint-disable-next-line no-console
+            console.log('[MSW] Service worker started');
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn('[MSW] Failed to start:', e);
+          mswStartedRef.current = false;
+        }
+      })();
+    }
+  }, []);
+
+  // Load persisted theme
   React.useEffect(() => {
     try {
       const saved = window.localStorage.getItem(THEME_STORAGE_KEY) as ThemeName | null;
@@ -65,6 +99,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
+  // Persist theme
   React.useEffect(() => {
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, themeName);
