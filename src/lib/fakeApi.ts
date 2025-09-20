@@ -1,5 +1,7 @@
 import { WorkOrder, WorkOrderStatus } from "../types/workOrder";
 import { Shop, ShopStatus } from "../types/shop";
+import { DefectMode, DefectQuote, RepairSummary } from "@/types/defect";
+import { Claim } from "@/types/claim";
 
 // Mock data
 const mockWorkOrders: WorkOrder[] = [
@@ -306,4 +308,102 @@ export function fetchShops(): Promise<Shop[]> {
       resolve(mockShops);
     }, 500); // simulate network delay, as what have done for workorder above
   });
+}
+
+const mockDefectQuotes: DefectQuote[] = [
+  {
+    ID: 1,
+    Image: "frame_000",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 180,
+  },
+  {
+    ID: 2,
+    Image: "frame_001",
+    Size: "1280x720",
+    Mode: DefectMode.Skip,
+    "Est.Charge": 0,
+  },
+  {
+    ID: 3,
+    Image: "frame_002",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 325.5,
+  },
+  {
+    ID: 4,
+    Image: "frame_003",
+    Size: "1024x768",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 95,
+  },
+  {
+    ID: 5,
+    Image: "frame_004",
+    Size: "2560x1440",
+    Mode: DefectMode.Skip,
+    "Est.Charge": 0,
+  },
+  {
+    ID: 6,
+    Image: "frame_005",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 210,
+  },
+  {
+    ID: 7,
+    Image: "frame_006",
+    Size: "1280x720",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 145.75,
+  },
+  {
+    ID: 8,
+    Image: "frame_007",
+    Size: "1960x1080",
+    Mode: DefectMode.Skip,
+    "Est.Charge": 0,
+  },
+  {
+    ID: 9,
+    Image: "frame_008",
+    Size: "1920x1080",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 480,
+  },
+  {
+    ID: 10,
+    Image: "frame_009",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    "Est.Charge": 260.99,
+  },
+];
+
+export function fetchDefectQuotes(): DefectQuote[] {
+  return mockDefectQuotes;
+}
+
+export const mockRepairSummary: RepairSummary = {
+  "Repair Shop": "#0001",
+  "Technician Name": "An-Ni",
+  "Pre-Authorized Dispatch": "Yes",
+  mockDefectQuotes,
+};
+
+export function fetchRepairSummary(): RepairSummary {
+  return mockRepairSummary;
+}
+
+export const mockClaim: Claim = {
+  "Insurance Claimed": true,
+  "Claim Approved": false,
+  Claim: "#123456",
+};
+
+export function fetchClaim(): Claim {
+  return mockClaim;
 }
