@@ -1,5 +1,7 @@
 import { WorkOrder, WorkOrderStatus } from "../types/workOrder";
-import {Shop, ShopStatus} from "../types/shop";
+import { Shop, ShopStatus } from "../types/shop";
+import { DefectMode, DefectQuote, RepairSummary } from "@/types/defect";
+import { Claim } from "@/types/claim";
 
 // Mock data
 const mockWorkOrders: WorkOrder[] = [
@@ -14,6 +16,17 @@ const mockWorkOrders: WorkOrder[] = [
     Phone: "123-456-7890",
     VIN: "1HGCM82633A004352",
     UserID: "user-001",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
   {
     WorkOrderID: "WO-1002",
@@ -26,6 +39,17 @@ const mockWorkOrders: WorkOrder[] = [
     Phone: "234-567-8901",
     VIN: "2T1BURHE5JC123456",
     UserID: "user-002",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
   {
     WorkOrderID: "WO-1003",
@@ -37,6 +61,17 @@ const mockWorkOrders: WorkOrder[] = [
     Email: "carol.williams@example.com",
     Phone: "345-678-9012",
     VIN: "3FA6P0H74HR123456",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
   {
     WorkOrderID: "WO-1004",
@@ -49,6 +84,17 @@ const mockWorkOrders: WorkOrder[] = [
     Phone: "456-789-0123",
     VIN: "4T1BF1FK5GU123456",
     UserID: "user-003",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
   {
     WorkOrderID: "WO-1005",
@@ -60,6 +106,17 @@ const mockWorkOrders: WorkOrder[] = [
     Email: "eve.davis@example.com",
     Phone: "567-890-1234",
     VIN: "5NPE24AF4FH123456",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
   {
     WorkOrderID: "WO-1006",
@@ -72,6 +129,17 @@ const mockWorkOrders: WorkOrder[] = [
     Phone: "678-901-2345",
     VIN: "1C4RJFBG7FC123456",
     UserID: "user-001",
+    Address: "",
+    City: "",
+    State: "",
+    ZIP: "",
+    Make: "",
+    Model: "",
+    BodyStyle: "",
+    Year: "",
+    Color: "",
+    DamageDate: "",
+    PlateNumber: "",
   },
 ];
 
@@ -87,185 +155,256 @@ export function fetchWorkOrders(): WorkOrder[] {
 //PROMPT: Finish SHOP INFO FROM S002 TO S009 BASED ON THE FORMAT OF S001.
 
 const mockShops: Shop[] = [
+  {
+    ShopId: "S001",
 
-    {
+    Name: "Shop One",
 
-        ShopId: "S001",
+    Status: ShopStatus.Active,
 
-        Name:"Shop One",
+    Address: "123 Main ST, Calgary, AB",
 
-        Status: ShopStatus.Active,
+    PostalCode: "T1X 1Y1",
 
-        Address:"123 Main ST, Calgary, AB",
+    ContactPerson: "Name One",
 
-        PostalCode:"T1X 1Y1",
+    ContactEmail: "email.one@example.com",
+  },
 
-        ContactPerson: "Name One",
+  {
+    ShopId: "S002",
 
-        ContactEmail: "email.one@example.com"
+    Name: "Prairie Auto Works",
 
-    },
+    Status: ShopStatus.Active,
 
-    {
+    Address: "200 9 Ave SW, Calgary, AB",
 
-        ShopId: "S002",
+    PostalCode: "T2P 2M5",
 
-        Name: "Prairie Auto Works",
+    ContactPerson: "Alice Johnson",
 
-        Status: ShopStatus.Active,
+    ContactEmail: "alice.johnson@example.com",
+  },
 
-        Address: "200 9 Ave SW, Calgary, AB",
+  {
+    ShopId: "S003",
 
-        PostalCode: "T2P 2M5",
+    Name: "Foothills Collision Center",
 
-        ContactPerson: "Alice Johnson",
+    Status: ShopStatus.Inactive,
 
-        ContactEmail: "alice.johnson@example.com",
+    Address: "8900 14 St SW, Calgary, AB",
 
-    },
+    PostalCode: "T2V 1P6",
 
-    {
+    ContactPerson: "Bob Smith",
 
-        ShopId: "S003",
+    ContactEmail: "bob.smith@example.com",
+  },
 
-        Name: "Foothills Collision Center",
+  {
+    ShopId: "S004",
 
-        Status: ShopStatus.Inactive,
+    Name: "Riverbend Repair Garage",
 
-        Address: "8900 14 St SW, Calgary, AB",
+    Status: ShopStatus.Active,
 
-        PostalCode: "T2V 1P6",
+    Address: "55 Riverbend Dr SE, Calgary, AB",
 
-        ContactPerson: "Bob Smith",
+    PostalCode: "T2C 3X1",
 
-        ContactEmail: "bob.smith@example.com",
+    ContactPerson: "Carol White",
 
-    },
+    ContactEmail: "carol.white@example.com",
+  },
 
-    {
+  {
+    ShopId: "S005",
 
-        ShopId: "S004",
+    Name: "North Peak Auto Body",
 
-        Name: "Riverbend Repair Garage",
+    Status: ShopStatus.Inactive,
 
-        Status: ShopStatus.Active,
+    Address: "1234 10 St NW, Calgary, AB",
 
-        Address: "55 Riverbend Dr SE, Calgary, AB",
+    PostalCode: "T2K 2Z9",
 
-        PostalCode: "T2C 3X1",
+    ContactPerson: "David Lee",
 
-        ContactPerson: "Carol White",
+    ContactEmail: "david.lee@example.com",
+  },
 
-        ContactEmail: "carol.white@example.com",
+  {
+    ShopId: "S006",
 
-    },
+    Name: "Horizon Dent & Frame",
 
-    {
+    Status: ShopStatus.Active,
 
-        ShopId: "S005",
+    Address: "742 Evergreen Rd SW, Calgary, AB",
 
-        Name: "North Peak Auto Body",
+    PostalCode: "T2Y 0J9",
 
-        Status: ShopStatus.Inactive,
+    ContactPerson: "Emily Brown",
 
-        Address: "1234 10 St NW, Calgary, AB",
+    ContactEmail: "emily.brown@example.com",
+  },
 
-        PostalCode: "T2K 2Z9",
+  {
+    ShopId: "S007",
 
-        ContactPerson: "David Lee",
+    Name: "Stampede Auto Service",
 
-        ContactEmail: "david.lee@example.com",
+    Status: ShopStatus.Inactive,
 
-    },
+    Address: "450 4 St SE, Calgary, AB",
 
-    {
+    PostalCode: "T2G 1Y5",
 
-        ShopId: "S006",
+    ContactPerson: "Frank Wilson",
 
-        Name: "Horizon Dent & Frame",
+    ContactEmail: "frank.wilson@example.com",
+  },
 
-        Status: ShopStatus.Active,
+  {
+    ShopId: "S008",
 
-        Address: "742 Evergreen Rd SW, Calgary, AB",
+    Name: "Chinook Paint & Body",
 
-        PostalCode: "T2Y 0J9",
+    Status: ShopStatus.Active,
 
-        ContactPerson: "Emily Brown",
+    Address: "100 Chinook Centre, Calgary, AB",
 
-        ContactEmail: "emily.brown@example.com",
+    PostalCode: "T2H 0K5",
 
-    },
+    ContactPerson: "Grace Taylor",
 
-    {
+    ContactEmail: "grace.taylor@example.com",
+  },
 
-        ShopId: "S007",
+  {
+    ShopId: "S009",
 
-        Name: "Stampede Auto Service",
+    Name: "Bow Valley Motors",
 
-        Status: ShopStatus.Inactive,
+    Status: ShopStatus.Inactive,
 
-        Address: "450 4 St SE, Calgary, AB",
+    Address: "300 Bow Valley Trail, Calgary, AB",
 
-        PostalCode: "T2G 1Y5",
+    PostalCode: "T2P 3N4",
 
-        ContactPerson: "Frank Wilson",
+    ContactPerson: "Henry Davis",
 
-        ContactEmail: "frank.wilson@example.com",
-
-    },
-
-    {
-
-        ShopId: "S008",
-
-        Name: "Chinook Paint & Body",
-
-        Status: ShopStatus.Active,
-
-        Address: "100 Chinook Centre, Calgary, AB",
-
-        PostalCode: "T2H 0K5",
-
-        ContactPerson: "Grace Taylor",
-
-        ContactEmail: "grace.taylor@example.com",
-
-    },
-
-    {
-
-        ShopId: "S009",
-
-        Name: "Bow Valley Motors",
-
-        Status: ShopStatus.Inactive,
-
-        Address: "300 Bow Valley Trail, Calgary, AB",
-
-        PostalCode: "T2P 3N4",
-
-        ContactPerson: "Henry Davis",
-
-        ContactEmail: "henry.davis@example.com",
-
-    },
-
-]
-
-
+    ContactEmail: "henry.davis@example.com",
+  },
+];
 
 // Mock API function for shops
 
 export function fetchShops(): Promise<Shop[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(mockShops);
+    }, 500); // simulate network delay, as what have done for workorder above
+  });
+}
 
-    return new Promise((resolve) => {
+const defectQuotes: DefectQuote[] = [
+  {
+    ID: 1,
+    Image: "frame_000",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    EstCharge: 180,
+  },
+  {
+    ID: 2,
+    Image: "frame_001",
+    Size: "1280x720",
+    Mode: DefectMode.Skip,
+    EstCharge: 0,
+  },
+  {
+    ID: 3,
+    Image: "frame_002",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    EstCharge: 325.5,
+  },
+  {
+    ID: 4,
+    Image: "frame_003",
+    Size: "1024x768",
+    Mode: DefectMode.Fixed,
+    EstCharge: 95,
+  },
+  {
+    ID: 5,
+    Image: "frame_004",
+    Size: "2560x1440",
+    Mode: DefectMode.Skip,
+    EstCharge: 0,
+  },
+  {
+    ID: 6,
+    Image: "frame_005",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    EstCharge: 210,
+  },
+  {
+    ID: 7,
+    Image: "frame_006",
+    Size: "1280x720",
+    Mode: DefectMode.Fixed,
+    EstCharge: 145.75,
+  },
+  {
+    ID: 8,
+    Image: "frame_007",
+    Size: "1960x1080",
+    Mode: DefectMode.Skip,
+    EstCharge: 0,
+  },
+  {
+    ID: 9,
+    Image: "frame_008",
+    Size: "1920x1080",
+    Mode: DefectMode.Fixed,
+    EstCharge: 480,
+  },
+  {
+    ID: 10,
+    Image: "frame_009",
+    Size: "1960x1080",
+    Mode: DefectMode.Fixed,
+    EstCharge: 260.99,
+  },
+];
 
-        setTimeout(() => {
+export function fetchDefectQuotes(): DefectQuote[] {
+  return defectQuotes;
+}
 
-            resolve(mockShops);
+export const mockRepairSummary: RepairSummary = {
+  "Repair Shop": "#0001",
+  "Technician Name": "An-Ni",
+  "Pre-Authorized Dispatch": "Yes",
+  defectQuotes,
+};
 
-        }, 500); // simulate network delay, as what have done for workorder above
+export function fetchRepairSummary(): RepairSummary {
+  return mockRepairSummary;
+}
 
-    });
+export const mockClaim: Claim = {
+  InsuranceClaimed: true,
+  ClaimApproved: false,
+  Claim: "#123456",
+  Note: "Customer to provide additional documents.",
+};
 
+export function fetchClaim(): Claim {
+  return mockClaim;
 }
