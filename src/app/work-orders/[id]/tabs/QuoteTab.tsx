@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { fetchRepairSummary } from '@/lib/fakeApi';
 
@@ -38,32 +38,30 @@ export default function QuoteTab() {
     setRows(toRows(summary));
   }, []);
 
-  const modeOptions = useMemo(() => Array.from(new Set(rows.map((r) => String(r.mode))).values()), [rows]);
+  // Just use a simple array for mode options
+  const modeOptions = Array.from(new Set(rows.map((r) => String(r.mode))).values());
 
-  const columns = useMemo<GridColDef[]>(
-    () => [
-      { field: 'id', headerName: 'ID', width: 80 },
-      { field: 'image', headerName: 'Image', flex: 1, minWidth: 140 },
-      { field: 'size', headerName: 'Size', flex: 0.8, minWidth: 120 },
-      {
-        field: 'mode',
-        headerName: 'Mode',
-        flex: 0.6,
-        minWidth: 140,
-        type: 'singleSelect',
-        editable: true,
-        valueOptions: modeOptions,
-      },
-      {
-        field: 'estCharge',
-        headerName: 'Est. Charge',
-        flex: 0.6,
-        minWidth: 120,
-        valueFormatter: (p: any) => "$ " + p,
-      },
-    ],
-    [modeOptions]
-  );
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'ID', width: 80 },
+    { field: 'image', headerName: 'Image', flex: 1, minWidth: 140 },
+    { field: 'size', headerName: 'Size', flex: 0.8, minWidth: 120 },
+    {
+      field: 'mode',
+      headerName: 'Mode',
+      flex: 0.6,
+      minWidth: 140,
+      type: 'singleSelect',
+      editable: true,
+      valueOptions: modeOptions,
+    },
+    {
+      field: 'estCharge',
+      headerName: 'Est. Charge',
+      flex: 0.6,
+      minWidth: 120,
+      valueFormatter: (p: any) => "$ " + p,
+    },
+  ];
 
   const processRowUpdate = (newRow: any, oldRow: any) => {
     if (newRow.id === oldRow.id) {
@@ -73,33 +71,38 @@ export default function QuoteTab() {
   };
 
   return (
-    <div className="p-4 text-gray-700">
-      <h2 className="text-lg font-semibold mb-3">Repair Summary</h2>
+    <div className="p-4">
+      <div className="bg-blue-100 text-gray-900 rounded-2xl shadow-xl p-6">
+        <h2 className="text-lg font-semibold mb-4">Repair Summary</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        {top.map((f) => (
-          <div key={f.label} className="bg-white border rounded p-3">
-            <div className="text-xs text-gray-500">{f.label}</div>
-            <div className="text-sm font-medium text-gray-800 truncate">{f.value}</div>
-          </div>
-        ))}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          {top.map((f) => (
+            <div
+              key={f.label}
+              className="bg-white/80 border border-blue-200 rounded-xl p-3 hover:bg-blue-50 transition"
+            >
+              <div className="text-xs text-blue-700">{f.label}</div>
+              <div className="text-sm font-medium text-blue-900 truncate">{f.value}</div>
+            </div>
+          ))}
+        </div>
 
-      <div className="bg-white border rounded">
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          autoHeight
-          disableColumnMenu
-          disableRowSelectionOnClick
-          editMode="cell"
-          processRowUpdate={processRowUpdate}
-          onProcessRowUpdateError={(err) => console.error(err)}
-          pageSizeOptions={[5, 10, 25]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10, page: 0 } },
-          }}
-        />
+        <div className="bg-white border border-blue-200 rounded-2xl shadow">
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            autoHeight
+            disableColumnMenu
+            disableRowSelectionOnClick
+            editMode="cell"
+            processRowUpdate={processRowUpdate}
+            onProcessRowUpdateError={(err) => console.error(err)}
+            pageSizeOptions={[5, 10, 25]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10, page: 0 } },
+            }}
+          />
+        </div>
       </div>
     </div>
   );
