@@ -4,7 +4,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
 
-interface LogEntry {
+type LogEntry = {
   id: number;
   timestamp: string;
   user: string;
@@ -24,10 +24,8 @@ export default function LogTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Replace with actual API call if available
     async function fetchLogs() {
       setLoading(true);
-      // Example static data
       setLogs([
         {
           id: 1,

@@ -12,17 +12,6 @@ export default function ClaimTab() {
     setClaim(data);
   }, []);
 
-  if (!claim) {
-    return (
-      <div className="p-4">
-        <div className="bg-blue-100 text-white rounded-2xl shadow-xl p-6">
-          <h2 className="text-lg font-semibold">Claim</h2>
-          <p className="text-gray-400">Loading claim data...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4">
       <div className="bg-blue-100 text-gray-800 rounded-2xl shadow-xl p-6">
@@ -35,11 +24,15 @@ export default function ClaimTab() {
               id="insurance-claimed"
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-400"
-              checked={claim['Insurance Claimed']}
+              checked={claim?.InsuranceClaimed}
               onChange={(e) =>
-                setClaim((prev: Claim | null) =>
-                  prev ? { ...prev, ['Insurance Claimed']: e.target.checked } : prev
-                )
+                setClaim((prev: Claim | null) => {
+                  if (prev !== null) {
+                    return { ...prev, InsuranceClaimed: e.target.checked };
+                  } else {
+                    return prev;
+                  }
+                })
               }
             />
             <label htmlFor="insurance-claimed" className="text-sm font-medium text-gray-700">
@@ -55,11 +48,15 @@ export default function ClaimTab() {
             <select
               id="claim-approved"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={claim['Claim Approved'] ? 'yes' : 'no'}
+              value={claim?.ClaimApproved ? 'yes' : 'no'}
               onChange={(e) =>
-                setClaim((prev: Claim | null) =>
-                  prev ? { ...prev, ['Claim Approved']: e.target.value === 'yes' } : prev
-                )
+                setClaim((prev: Claim | null) => {
+                  if (prev !== null) {
+                    return { ...prev, ClaimApproved: e.target.value === 'yes' };
+                  } else {
+                    return prev;
+                  }
+                })
               }
             >
               <option value="yes">Yes</option>
@@ -76,9 +73,15 @@ export default function ClaimTab() {
               id="claim-text"
               type="text"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={claim.Claim}
+              value={claim?.Claim}
               onChange={(e) =>
-                setClaim((prev: Claim | null) => (prev ? { ...prev, Claim: e.target.value } : prev))
+                setClaim((prev: Claim | null) => {
+                  if (prev !== null) {
+                    return { ...prev, Claim: e.target.value };
+                  } else {
+                    return prev;
+                  }
+                })
               }
               placeholder="Enter claim details"
             />
@@ -93,9 +96,15 @@ export default function ClaimTab() {
               id="claim-note"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
               rows={4}
-              value={claim.Note}
+              value={claim?.Note}
               onChange={(e) =>
-                setClaim((prev: Claim | null) => (prev ? { ...prev, Note: e.target.value } : prev))
+                setClaim((prev: Claim | null) => {
+                  if (prev !== null) {
+                    return { ...prev, Note: e.target.value };
+                  } else {
+                    return prev;
+                  }
+                })
               }
               placeholder="Enter note"
             />

@@ -8,12 +8,12 @@ export interface DefectQuote {
   Image: string;
   Size: string;
   Mode: DefectMode;
-  "Est.Charge": number;
+  EstCharge: number;
 }
 
 export interface RepairSummary {
   "Repair Shop": string;
   "Technician Name": string;
   "Pre-Authorized Dispatch": string;
-  mockDefectQuotes: DefectQuote[];
+  defectQuotes: DefectQuote[];
 }
