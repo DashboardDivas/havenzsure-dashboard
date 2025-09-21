@@ -12,7 +12,10 @@ import LogTab from "./tabs/LogTab";
 import * as React from "react";
 import { Typography } from "@mui/material";
 
-const REGISTRY: Record<string, React.ComponentType<{ id: string }>> = {
+import { fetchWorkOrders } from "@/lib/fakeApi"; // ✅ using mock data
+import { WorkOrder } from "@/types/workOrder";
+
+const REGISTRY: Record<string, React.ComponentType<{ workOrder: WorkOrder }>> = {
   overview: OverviewTab,
   aiscan: AIScanTab,
   quote: QuoteTab,
@@ -31,6 +34,14 @@ export default function WorkOrderDetail() {
   const tab = sp.get("tab") ?? "overview";
   const Section = REGISTRY[tab] ?? OverviewTab;
 
+  // ✅ Fetch the work order by ID from mock API
+  const workOrders = fetchWorkOrders();
+  const workOrder = workOrders.find((wo) => wo.WorkOrderID === id);
+
+  if (!workOrder) {
+    return <div>Work Order not found</div>;
+  }
+
   const onTabChange = (next: string) => {
     const qp = new URLSearchParams(sp.toString());
     qp.set("tab", next);
@@ -42,8 +53,16 @@ export default function WorkOrderDetail() {
       <Typography variant="h5" gutterBottom>
         Work Order #{id}
       </Typography>
-      <WorkOrderTabs activeTab={tab} onTabChange={onTabChange} />
-      <Section id={id} />
+
+      {/* ✅ pass workOrder here */}
+      <WorkOrderTabs
+        workOrder={workOrder}
+        activeTab={tab}
+        onTabChange={onTabChange}
+      />
+
+      {/* ✅ Section also needs workOrder */}
+      
     </WorkOrderProvider>
   );
 }
