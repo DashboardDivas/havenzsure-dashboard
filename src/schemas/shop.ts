@@ -1,0 +1,151 @@
+import { z } from "zod";
+
+/* ========================
+ *  Domain enums (align DB)
+ * ======================== */
+
+export const PROVINCES = [
+  "AB","BC","MB","NB","NL","NT","NS","NU","ON","PE","QC","SK","YT",
+] as const;
+
+export const SHOP_STATUS = ["active", "inactive"] as const;
+
+export const ProvinceSchema = z.enum(PROVINCES, {
+  message: "Province is required",
+});
+export type Province = z.infer<typeof ProvinceSchema>;
+
+export const ShopStatusSchema = z.enum(SHOP_STATUS, {
+  message: "Status is required",
+});
+export type ShopStatus = z.infer<typeof ShopStatusSchema>;
+
+/* ========================
+ *  Regex (align DB checks)
+ * ======================== */
+
+export const POSTAL_REGEX = /^[A-Z][0-9][A-Z] ?[0-9][A-Z][0-9]$/i;       // A1A 1A1
+export const PHONE_REGEX  = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/;              // 403-555-1234
+export const EMAIL_REGEX  = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;  // <=254 by rule below
+
+/* ========================
+ *  Normalizers (UX helpers)
+ * ======================== */
+
+export const normalizeProvince = (v: string) => v.replace(/\s+/g, "").toUpperCase();
+
+export const normalizePostalCode = (v: string) => {
+  const raw = v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  if (raw.length <= 3) return raw;
+  return `${raw.slice(0, 3)} ${raw.slice(3)}`;
+};
+
+export const normalizeCode = (v: string) =>
+  v.toUpperCase().replace(/\s+/g, "").slice(0, 10);
+
+export const formatPhone = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 10);
+  const a = d.slice(0, 3), b = d.slice(3, 6), c = d.slice(6);
+  if (!a) return "";
+  if (!b) return a;
+  if (!c) return `${a}-${b}`;
+  return `${a}-${b}-${c}`;
+};
+
+/* ==================================
+ *  Create / Update / Read Schemas
+ * ================================== */
+
+export const ShopCreateSchema = z.object({
+  code: z
+    .string({ message: "Code is required" })
+    .min(1, "Code is required")
+    .max(10, "Max 10 characters")
+    .regex(/^[A-Z0-9]+$/i, "Letters and digits only"),
+
+  shop_name: z.string({ message: "Shop name is required" }).min(1, "Shop name is required"),
+
+  status: ShopStatusSchema.optional().default("active"),
+
+  address: z.string({ message: "Address is required" }).min(1, "Address is required"),
+  city: z.string({ message: "City is required" }).min(1, "City is required"),
+  province: ProvinceSchema,
+  postal_code: z
+    .string({ message: "Postal code is required" })
+    .min(1, "Postal code is required")
+    .refine((v) => POSTAL_REGEX.test(v), "Use format A1A 1A1"),
+  contact_name: z.string({ message: "Contact name is required" }).min(1, "Contact name is required"),
+  phone: z
+    .string({ message: "Phone is required" })
+    .regex(PHONE_REGEX, "Use format 403-555-1234"),
+  email: z
+    .string({ message: "Email is required" })
+    .max(254, "Email too long")
+    .regex(EMAIL_REGEX, "Invalid email"),
+});
+export type ShopCreateInput = z.infer<typeof ShopCreateSchema>;
+
+export const ShopUpdateSchema = z.object({
+  code: z.string().max(10).regex(/^[A-Z0-9]+$/i, "Letters and digits only").optional(),
+  shop_name: z.string().min(1).optional(),
+  status: ShopStatusSchema.optional(),
+  address: z.string().min(1).optional(),
+  city: z.string().min(1).optional(),
+  province: ProvinceSchema.optional(),
+  postal_code: z.string().refine((v) => POSTAL_REGEX.test(v), "Use format A1A 1A1").optional(),
+  contact_name: z.string().min(1).optional(),
+  phone: z.string().regex(PHONE_REGEX, "Use format 403-555-1234").optional(),
+  email: z.string().max(254).regex(EMAIL_REGEX, "Invalid email").optional(),
+});
+export type ShopUpdateInput = z.infer<typeof ShopUpdateSchema>;
+
+export const ShopItemSchema = z.object({
+  id: z.number().int().positive(),
+  code: z.string(),
+  shop_name: z.string(),
+  status: ShopStatusSchema,
+  address: z.string(),
+  city: z.string(),
+  province: ProvinceSchema,
+  postal_code: z.string(),
+  contact_name: z.string(),
+  phone: z.string(),
+  email: z.string(),
+  created_at: z.string(), // or z.coerce.date()
+  updated_at: z.string(),
+});
+export type ShopItem = z.infer<typeof ShopItemSchema>;
+
+/* ==========================
+ *  API payload mappers
+ * ========================== */
+
+export const toCreatePayloadCamel = (i: ShopCreateInput) => {
+
+  const { status: _omit, ...rest } = i;
+  return {
+    code: rest.code,
+    shopName: rest.shop_name,
+    address: rest.address,
+    city: rest.city,
+    province: rest.province,
+    postalCode: rest.postal_code,
+    contactName: rest.contact_name,
+    phone: rest.phone,
+    email: rest.email,
+  };
+};
+
+export const toCreatePayloadSnake = (i: ShopCreateInput) => {
+  const { status: _omit, ...rest } = i;
+  return rest;
+};
+
+/* ==========================
+ *  Quick helpers
+ * ========================== */
+
+export const parseShopCreate = (data: unknown) => ShopCreateSchema.parse(data);
+export const safeParseShopCreate = (data: unknown) => ShopCreateSchema.safeParse(data);
+export const parseShopUpdate = (data: unknown) => ShopUpdateSchema.parse(data);
+export const parseShopItem   = (data: unknown) => ShopItemSchema.parse(data);

@@ -5,18 +5,19 @@ export interface Shop
 {
     id:number;
     code:string;
-    shopName:string;
+    shop_name:string;
     status: ShopStatus;
     address:string;
     city:string;
     province:Province;
-    postalCode:string;
-    contactName:string;
+    postal_code:string;
+    contact_name:string;
     phone:string;
     email:string;
-    createdAt:string;
-    updatedAt:string;
+
+    created_at:string;
+    updated_at:string;
 }
 
-export type ShopCreate = Omit<Shop, 'id' | 'createdAt' | 'updatedAt'>;
+export type ShopCreate = Omit<Shop, 'id' | 'created_at' | 'updated_at'>;
 export type ShopUpdate = Partial<ShopCreate>;

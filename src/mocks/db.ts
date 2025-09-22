@@ -27,8 +27,8 @@ function validate(input: Partial<ShopCreate>) {
   if (input.province != null && !PROVINCES.includes(input.province)) {
     errors.push({ field: 'province', code: 'invalid_value', hint: PROVINCES.join(',') });
   }
-  if (input.postalCode != null && !RX_POSTAL.test(input.postalCode)) {
-    errors.push({ field: 'postalCode', code: 'invalid_format', hint: 'Use A1A 1A1' });
+  if (input.postal_code != null && !RX_POSTAL.test(input.postal_code)) {
+    errors.push({ field: 'postal_code', code: 'invalid_format', hint: 'Use A1A 1A1' });
   }
   if (input.phone != null && !RX_PHONE.test(input.phone)) {
     errors.push({ field: 'phone', code: 'invalid_format', hint: 'NNN-NNN-NNNN' });
@@ -40,37 +40,36 @@ function validate(input: Partial<ShopCreate>) {
   return errors;
 }
 
-// ---- 初始数据（符合真实约束）----
 let shops: Shop[] = [
   {
     id: 1,
     code: 'S001',
-    shopName: 'Alpha Auto',
+    shop_name: 'Alpha Auto',
     status: 'active',
     address: '123 Main St',
     city: 'Calgary',
     province: 'AB',
-    postalCode: 'T2P 2B5',
-    contactName: 'Jane Smith',
+    postal_code: 'T2P 2B5',
+    contact_name: 'Jane Smith',
     phone: '403-555-1234',
     email: 'jane@alphaauto.ca',
-    createdAt: nowISO(),
-    updatedAt: nowISO(),
+    created_at: nowISO(),
+    updated_at: nowISO(),
   },
   {
     id: 2,
     code: 'S002',
-    shopName: 'Pacific Bodyworks',
+    shop_name: 'Pacific Bodyworks',
     status: 'inactive',
     address: '88 W 4th Ave',
     city: 'Vancouver',
     province: 'BC',
-    postalCode: 'V5Y 1G3',
-    contactName: 'Ken Lee',
+    postal_code: 'V5Y 1G3',
+    contact_name: 'Ken Lee',
     phone: '604-555-9876',
     email: 'ken@pacificbw.ca',
-    createdAt: nowISO(),
-    updatedAt: nowISO(),
+    created_at: nowISO(),
+    updated_at: nowISO(),
   },
 ];
 
@@ -82,13 +81,13 @@ export async function listShops(params?: { status?: ShopStatus; q?: string }) {
     const q = params.q.toLowerCase();
     data = data.filter(s =>
       s.code.toLowerCase().includes(q) ||
-      s.shopName.toLowerCase().includes(q) ||
+      s.shop_name.toLowerCase().includes(q) ||
       s.city.toLowerCase().includes(q) ||
-      s.postalCode.toLowerCase().includes(q)
+      s.postal_code.toLowerCase().includes(q)
     );
   }
   // 默认按 updatedAt desc
-  data.sort((a,b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  data.sort((a,b) => (a.updated_at < b.updated_at ? 1 : -1));
   return data;
 }
 
@@ -102,7 +101,7 @@ export async function createShop(payload: ShopCreate) {
   // 规范化 + 校验
   const normalized: ShopCreate = {
     ...payload,
-    postalCode: normalizePostal(payload.postalCode),
+    postal_code: normalizePostal(payload.postal_code),
   };
   const errors = validate(normalized);
   if (errors.length) {
@@ -122,8 +121,8 @@ export async function createShop(payload: ShopCreate) {
   const next: Shop = {
     id: ++_id,
     ...normalized,
-    createdAt: now,
-    updatedAt: now,
+    created_at: now,
+    updated_at: now,
   };
   shops.push(next);
   return next;
@@ -134,7 +133,7 @@ export async function updateShop(id: number, patch: ShopUpdate) {
   if (idx === -1) throw Object.assign(new Error('shop not found'), { status: 404 });
 
   const draft: Shop = { ...shops[idx], ...patch };
-  if (patch.postalCode) draft.postalCode = normalizePostal(patch.postalCode);
+  if (patch.postal_code) draft.postal_code = normalizePostal(patch.postal_code);
 
   const errors = validate(draft as ShopCreate);
   if (errors.length) {
@@ -154,7 +153,7 @@ export async function updateShop(id: number, patch: ShopUpdate) {
     }
   }
 
-  draft.updatedAt = nowISO();
+  draft.updated_at = nowISO();
   shops[idx] = draft;
   return draft;
 }

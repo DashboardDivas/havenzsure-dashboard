@@ -1,11 +1,10 @@
-// src/lib/api/shop.ts
 import { http } from "../http";
 import type { Shop, ShopStatus, ShopCreate, ShopUpdate} from "@/types/shop";
 
 
 export type ShopListParams = {
-  status?: ShopStatus; 
-  q?: string;          
+  status?: ShopStatus;
+  q?: string;
   page?: number;
   pageSize?: number;
 };
@@ -22,8 +21,7 @@ function qs(params?: Record<string, any>) {
 }
 
 export const ShopsAPI = {
-  list: (params?: ShopListParams) =>
-    http<Shop[]>(`/api/shops${qs(params)}`),
+  list: () => http<Shop[]>("/api/shops"),
 
   read: (id: number) =>
     http<Shop>(`/api/shops/${id}`),
