@@ -24,7 +24,7 @@ export default function ClaimTab() {
               id="insurance-claimed"
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-400"
-              checked={claim?.InsuranceClaimed}
+              checked={claim?.InsuranceClaimed ?? false}
               onChange={(e) =>
                 setClaim((prev: Claim | null) => {
                   if (prev !== null) {
@@ -73,7 +73,7 @@ export default function ClaimTab() {
               id="claim-text"
               type="text"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={claim?.Claim}
+              value={claim?.Claim ?? ''}
               onChange={(e) =>
                 setClaim((prev: Claim | null) => {
                   if (prev !== null) {

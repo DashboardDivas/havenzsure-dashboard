@@ -1,10 +1,15 @@
 "use client";
 
-import { WorkOrder } from "@/types/workOrder";
+import { useParams } from "next/navigation";
 import { fetchDefectQuotes } from "@/lib/fakeApi";
-import Button from "@/components/ui/PrimaryButton"; // ✅ your custom gradient button
+import Button from "@/components/ui/PrimaryButton";
+import { fetchWorkOrders } from "@/lib/fakeApi";
 
-export default function OverviewTab({ workOrder }: { workOrder: WorkOrder }) {
+export default function OverviewTab() {
+  const params = useParams();
+  const workOrderId = params.id as string;
+  const workOrders = fetchWorkOrders();
+  const workOrder = workOrders.find((wo) => wo.WorkOrderID === workOrderId)!!;
   const defectQuotes = fetchDefectQuotes();
 
   return (
