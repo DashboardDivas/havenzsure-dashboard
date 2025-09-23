@@ -24,7 +24,7 @@ export default function ClaimTab() {
               id="insurance-claimed"
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-400"
-              checked={claim?.InsuranceClaimed}
+              checked={claim?.InsuranceClaimed ?? false}
               onChange={(e) =>
                 setClaim((prev: Claim | null) => {
                   if (prev !== null) {
