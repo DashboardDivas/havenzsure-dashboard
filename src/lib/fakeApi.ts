@@ -145,7 +145,6 @@ const mockWorkOrders: WorkOrder[] = [
   },
 ];
 
-
 // Mock API function
 export function fetchWorkOrders(): WorkOrder[] {
   return mockWorkOrders;
