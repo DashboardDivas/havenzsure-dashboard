@@ -4,8 +4,45 @@ import React from "react";
 import { Button, ButtonProps } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
-export function AppButton({ children, ...props }: ButtonProps) {
+export function AppButton({
+  children,
+  gradient,
+  ...props
+}: ButtonProps & { gradient?: string }) {
   const theme = useTheme();
+
+  // 🧠 Determine which color to use (supports "error", "success", etc.)
+  const colorKey = props.color || "primary";
+
+  const validColorKeys = [
+    "primary",
+    "secondary",
+    "success",
+    "error",
+    "warning",
+    "info",
+  ] as const;
+  type ValidColorKey = (typeof validColorKeys)[number];
+
+  const isValidColorKey = (key: string): key is ValidColorKey =>
+    validColorKeys.includes(key as ValidColorKey);
+
+  // ✅ Safe palette access
+  const palette = isValidColorKey(colorKey)
+    ? theme.palette[colorKey]
+    : theme.palette.primary;
+
+  const main = palette.main || theme.palette.primary.main;
+  const dark = palette.dark || main;
+  const light = palette.light || main;
+
+  // ✅ Optional custom gradient support
+  const background =
+    props.variant === "contained"
+      ? gradient
+        ? `linear-gradient(90deg, ${gradient})`
+        : `linear-gradient(90deg, ${main}, ${dark})`
+      : "transparent";
 
   return (
     <Button
@@ -18,44 +55,42 @@ export function AppButton({ children, ...props }: ButtonProps) {
         py: 1,
         transition: "all 0.2s ease-in-out",
 
-        // ✅ Contained Variant (Default)
+        // ✅ Contained variant
         ...(props.variant === "contained" && {
-          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${
-            theme.palette.secondary?.main || theme.palette.primary.main
-          })`,
-          color: theme.palette.getContrastText(theme.palette.primary.main),
+          background,
+          color: theme.palette.getContrastText(main),
           "&:hover": {
-            background: `linear-gradient(90deg, ${theme.palette.primary.dark}, ${
-              theme.palette.secondary?.dark || theme.palette.primary.dark
-            })`,
+            background: gradient
+              ? `linear-gradient(90deg, ${gradient})`
+              : `linear-gradient(90deg, ${dark}, ${main})`,
             boxShadow: theme.shadows[4],
           },
           "&:active": {
-            background: `linear-gradient(90deg, ${theme.palette.primary.light}, ${
-              theme.palette.secondary?.light || theme.palette.primary.light
-            })`,
+            background: gradient
+              ? `linear-gradient(90deg, ${gradient})`
+              : `linear-gradient(90deg, ${light}, ${main})`,
             boxShadow: theme.shadows[1],
             transform: "scale(0.98)",
           },
         }),
 
-        // ✅ Outlined Variant
+        // ✅ Outlined variant
         ...(props.variant === "outlined" && {
-          borderColor: theme.palette.primary.main,
-          color: theme.palette.primary.main,
+          borderColor: main,
+          color: main,
           "&:hover": {
-            borderColor: theme.palette.primary.dark,
+            borderColor: dark,
             background: theme.palette.action.hover,
           },
           "&:active": {
-            borderColor: theme.palette.primary.light,
+            borderColor: light,
             background: theme.palette.action.selected,
           },
         }),
 
-        // ✅ Text Variant
+        // ✅ Text variant
         ...(props.variant === "text" && {
-          color: theme.palette.primary.main,
+          color: main,
           "&:hover": {
             background: theme.palette.action.hover,
           },
@@ -64,7 +99,7 @@ export function AppButton({ children, ...props }: ButtonProps) {
           },
         }),
 
-        // ✅ Disabled State (applies to all)
+        // ✅ Disabled state
         "&.Mui-disabled": {
           background:
             props.variant === "contained"
@@ -75,7 +110,7 @@ export function AppButton({ children, ...props }: ButtonProps) {
           boxShadow: "none",
         },
 
-        ...props.sx, // allow overrides
+        ...props.sx,
       }}
     >
       {children}

@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Drawer,
   Box,
@@ -41,6 +42,7 @@ function SidebarButton({
   const theme = useTheme();
   return (
     <Button
+      component={href ? Link : "button"} // ✅ use Next.js Link if href provided
       href={href}
       variant="text"
       startIcon={icon}
@@ -89,20 +91,21 @@ export default function Sidebar({
   const theme = useTheme();
 
   const mainMenuItems = [
-    { name: "Dashboard", icon: <Dashboard />, href: "#" },
-    { name: "Work Orders", icon: <Assignment />, href: "#" },
-    { name: "Users", icon: <People />, href: "#" },
-    { name: "Shops", icon: <Store />, href: "#" },
-    { name: "Jobs", icon: <Work />, href: "#" },
-    { name: "Help", icon: <HelpOutline />, href: "#" },
+    { name: "Dashboard", icon: <Dashboard />, href: "/" },
+    { name: "Work Orders", icon: <Assignment />, href: "/workorder" },
+    { name: "Users", icon: <People />, href: "/users" },
+    { name: "Shops", icon: <Store />, href: "/shops" },
+    { name: "Jobs", icon: <Work />, href: "/jobs" },
+    { name: "History", icon: <History />, href: "/history" },
+    { name: "Help", icon: <HelpOutline />, href: "/help" },
   ];
 
   const workspaceItems = [
-    { name: "Starred", icon: <Star />, href: "#" },
-    { name: "Recent", icon: <Lock />, href: "#" },
-    { name: "Archive", icon: <Archive />, href: "#" },
-    { name: "Tags", icon: <Label />, href: "#" },
-    { name: "Trash", icon: <Delete />, href: "#" },
+    { name: "Starred", icon: <Star />, href: "/starred" },
+    { name: "Recent", icon: <Lock />, href: "/recent" },
+    { name: "Archive", icon: <Archive />, href: "/archive" },
+    { name: "Tags", icon: <Label />, href: "/tags" },
+    { name: "Trash", icon: <Delete />, href: "/trash" },
   ];
 
   // Mock activity log
@@ -202,7 +205,7 @@ export default function Sidebar({
         <Divider sx={{ my: 2 }} />
 
         {/* Settings */}
-        <SidebarButton icon={<Settings />} label="Settings" href="#" />
+        <SidebarButton icon={<Settings />} label="Settings" href="/settings" />
 
         <Divider sx={{ my: 2 }} />
 
@@ -212,12 +215,12 @@ export default function Sidebar({
             Recent Activity
           </Typography>
 
-          {/* scrollable list area: plain non-focusable rows to avoid highlight */}
+          {/* scrollable list area */}
           <Box
             sx={{
-              maxHeight: 200, // adjust as needed
+              maxHeight: 200,
               overflowY: "auto",
-              pr: 1, // space for scrollbar so content doesn't hide behind it
+              pr: 1,
             }}
           >
             {activities.map((activity) => (
@@ -230,15 +233,23 @@ export default function Sidebar({
                   py: 1,
                 }}
               >
-                <Box sx={{ minWidth: 32, display: "flex", justifyContent: "center" }}>
+                <Box
+                  sx={{ minWidth: 32, display: "flex", justifyContent: "center" }}
+                >
                   {activity.icon}
                 </Box>
 
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: theme.palette.text.primary }}
+                  >
                     {activity.text}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
                     {activity.time}
                   </Typography>
                 </Box>
