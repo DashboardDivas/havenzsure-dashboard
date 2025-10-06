@@ -51,6 +51,8 @@ export interface Job {
   status: "Pending" | "In Progress" | "Completed" | "Cancelled";
   image?: string;
 }
+
+
 const jobs: Job[] = [
   {
     id: 101,title: "Brake Replacement",customer: "John Doe",assignedTo: "Alex Smith",repairShop: "AutoFix Garage",status: "In Progress",image: "/jobs/brake.jpg", },
@@ -168,6 +170,8 @@ const shops: Shop[] = [
   { id: "#020", name: "Sunlight Interiors", owner: "Tina Lopez", status: "inactive", address: "741 Birch St", postalCode: "12345", contact: "555-234-8765", email: "sunlightinteriors@example.com" },
 ];
 
+
+
 // --- Fake API methods --- //
 export const fakeApi = {
   getUsers: async (): Promise<(User & { repairShop: string })[]> => {
@@ -177,6 +181,18 @@ export const fakeApi = {
       return { ...u, repairShop: shop?.name || "—" };
     });
   },
+  updateUser: async (updatedUser: User): Promise<User> => {
+  await new Promise((res) => setTimeout(res, 300));
+
+  const index = users.findIndex((u) => u.id === updatedUser.id);
+  if (index !== -1) {
+    users[index] = { ...users[index], ...updatedUser };
+    return users[index];
+  } else {
+    throw new Error("User not found");
+  }
+},
+
   getWorkOrders: async (): Promise<WorkOrder[]> => {
     await new Promise((res) => setTimeout(res, 500));
     return workOrders.map((wo) => {
@@ -188,6 +204,17 @@ export const fakeApi = {
     await new Promise((res) => setTimeout(res, 500));
     return shops;
   },
+  updateShop: async (updatedShop: Shop): Promise<Shop> => {
+    await new Promise((res) => setTimeout(res, 300));
+
+    const index = shops.findIndex((s) => s.id === updatedShop.id);
+    if (index !== -1) {
+      shops[index] = { ...shops[index], ...updatedShop };
+      return shops[index];
+    } else {
+      throw new Error("Shop not found");
+    }
+  },
  getClaim: async (): Promise<Claim> => {
     await new Promise((res) => setTimeout(res, 300));
     return mockClaim;
@@ -195,7 +222,21 @@ export const fakeApi = {
   getJobs: async (): Promise<Job[]> => {
     await new Promise((res) => setTimeout(res, 300));
     return jobs;
+  },
+  updateJob: async (updatedJob: Job): Promise<Job> => {
+  await new Promise((res) => setTimeout(res, 300));
+
+  const index = jobs.findIndex((j) => j.id === updatedJob.id);
+  if (index !== -1) {
+    jobs[index] = { ...jobs[index], ...updatedJob };
+    if (typeof window !== "undefined") {
+      localStorage.setItem("jobs", JSON.stringify(jobs));
+    }
+    return jobs[index];
+  } else {
+    throw new Error("Job not found");
   }
+},
 };
 
 // --- Mock Claim --- //

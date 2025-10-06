@@ -1,7 +1,10 @@
-// src/app/page.tsx
-import DashboardPage from "./dashboard/page";
+import HavenzsureLoginPage from "./login/page";
 
-
-export default function HomePage() {
-  return <DashboardPage />;
+export default function Page() {
+  return (
+    <>
+      <HavenzsureLoginPage />
+    </>
+  );
 }
+

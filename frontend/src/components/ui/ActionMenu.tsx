@@ -1,65 +1,89 @@
+"use client";
+
 import React, { useState } from "react";
-import { IconButton, Menu, MenuItem, Button } from "@mui/material";
+import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import ArchiveIcon from "@mui/icons-material/Archive";
-import { useThemeContext } from "@/context/ThemeContext"; // Import the context
+import { useThemeContext } from "@/context/ThemeContext";
+import { useRouter } from "next/navigation";
+
+type EntityType = "user" | "shop" | "workorder" | "job";
 
 type ActionMenuProps = {
-  onView?: () => void;
-  onEdit?: () => void;
-  onArchive?: () => void;
+  id: string | number;
+  type: EntityType;
+  onArchive?: (id: string | number, type: EntityType) => void;
 };
 
-export default function ActionMenu({ onView, onEdit, onArchive }: ActionMenuProps) {
-  const { mode } = useThemeContext(); // Get the theme mode from context
-  const [selectedAction, setSelectedAction] = useState<string | number>(""); // Track selected action
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // State for menu anchor
-  const [isActionSelected, setIsActionSelected] = useState(false); // Track if an action is selected
+export default function ActionMenu({ id, type, onArchive }: ActionMenuProps) {
+  const { mode } = useThemeContext();
+  const router = useRouter();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget); // Set the anchor element for the menu
-    setIsActionSelected(false); // Reset selection when the menu is opened
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setAnchorEl(null); // Close the menu
-    setIsActionSelected(false); // Reset selection when menu closes
+    setAnchorEl(null);
   };
 
-  const handleActionSelect = (value: string | number) => {
-    setSelectedAction(value); // Set the selected action
-    setIsActionSelected(true); // Mark that an action was selected
+  const handleAction = (action: "view" | "edit" | "archive") => {
+    handleMenuClose();
+
+    // ✅ Navigate or perform logic based on entity type
+    switch (action) {
+      case "view":
+        if (type === "workorder") router.push(`/workorder/${id}`);
+        else router.push(`/${type}s/${id}`);
+        break;
+
+      case "edit":
+        // Navigate to same detail page — edit dialog will handle the rest
+        if (type === "workorder") router.push(`/workorder/${id}`);
+        else router.push(`/${type}s/${id}`);
+        // The edit modal will open within that page
+        break;
+
+      case "archive":
+        if (onArchive) onArchive(id, type);
+        break;
+    }
   };
 
-  const handleActionConfirm = () => {
-    // Trigger the corresponding action when confirmed
-    if (selectedAction === "view") onView?.();
-    if (selectedAction === "edit") onEdit?.();
-    if (selectedAction === "archive") onArchive?.();
-    handleMenuClose(); // Close the menu after confirming the action
-  };
-
-  // Define the options for the dropdown with custom colors based on the theme
   const dropdownOptions = [
-    { label: "View", value: "view", icon: <VisibilityIcon fontSize="small" />, color: mode === "light" ? "#4CAF50" : "#81C784" }, // Green for view
-    { label: "Edit", value: "edit", icon: <EditIcon fontSize="small" />, color: mode === "light" ? "#FF9800" : "#FFB74D" }, // Orange for edit
-    { label: "Archive", value: "archive", icon: <ArchiveIcon fontSize="small" />, color: mode === "light" ? "#F44336" : "#E57373" }, // Red for archive
+    {
+      label: "View",
+      value: "view",
+      icon: <VisibilityIcon fontSize="small" />,
+      color: mode === "light" ? "#4CAF50" : "#81C784", // green
+    },
+    {
+      label: "Edit",
+      value: "edit",
+      icon: <EditIcon fontSize="small" />,
+      color: mode === "light" ? "#FF9800" : "#FFB74D", // orange
+    },
+    {
+      label: "Archive",
+      value: "archive",
+      icon: <ArchiveIcon fontSize="small" />,
+      color: mode === "light" ? "#F44336" : "#E57373", // red
+    },
   ];
 
   return (
     <>
-      {/* Clicking the three dots will open the menu */}
       <IconButton size="small" onClick={handleMenuOpen}>
         <MoreVertIcon fontSize="small" />
       </IconButton>
 
-      {/* Menu component with dropdown options */}
       <Menu
-        anchorEl={anchorEl} // Specify the anchor element
-        open={Boolean(anchorEl)} // Open when anchorEl is set
-        onClose={handleMenuClose} // Close when clicking outside or making a selection
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
         anchorOrigin={{
           vertical: "top",
           horizontal: "right",
@@ -72,12 +96,16 @@ export default function ActionMenu({ onView, onEdit, onArchive }: ActionMenuProp
         {dropdownOptions.map((option) => (
           <MenuItem
             key={option.value}
-            onClick={() => handleActionSelect(option.value)} // Store the selected option
+            onClick={() =>
+              handleAction(option.value as "view" | "edit" | "archive")
+            }
             sx={{
-              color: option.color, // Apply the color based on action type
-              '&:hover': {
-                backgroundColor: option.color + '30', // Lighter hover effect
+              color: option.color,
+              "&:hover": {
+                backgroundColor: option.color + "30",
               },
+              display: "flex",
+              gap: 1,
             }}
           >
             {option.icon}
@@ -85,13 +113,6 @@ export default function ActionMenu({ onView, onEdit, onArchive }: ActionMenuProp
           </MenuItem>
         ))}
       </Menu>
-
-      {/* Show the "Confirm Action" button only after an action is selected */}
-      {isActionSelected && (
-        <Button onClick={handleActionConfirm} color="primary">
-          Confirm Action: {dropdownOptions.find(opt => opt.value === selectedAction)?.label}
-        </Button>
-      )}
     </>
   );
 }

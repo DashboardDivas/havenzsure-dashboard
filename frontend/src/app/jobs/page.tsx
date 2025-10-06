@@ -5,44 +5,128 @@ import {
   Avatar,
   Box,
   Typography,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  InputBase,
+  Fade,
+  Stack,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useTheme, styled, alpha } from "@mui/material/styles";
+import SearchIcon from "@mui/icons-material/Search";
+import { useRouter } from "next/navigation";
 
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { fakeApi, Job } from "@/lib/fakeApi"; 
+import { fakeApi, Job } from "@/lib/fakeApi";
+import ActionMenu from "@/components/ui/ActionMenu";
 import { AddJobForm } from "@/components/ui/AddJobForm";
 
+
+const SearchContainer = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  borderRadius:
+    typeof theme.shape.borderRadius === "number"
+      ? theme.shape.borderRadius * 3
+      : 12,
+  padding: theme.spacing(0.5, 1),
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? alpha(theme.palette.common.white, 0.05)
+      : alpha(theme.palette.common.black, 0.05),
+  border: `1px solid ${theme.palette.divider}`,
+  width: "100%",
+  maxWidth: 400,
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: theme.palette.text.primary,
+  flex: 1,
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(1)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+  },
+}));
+
 export default function JobsPage() {
+  const theme = useTheme();
+  const router = useRouter();
+
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Table state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [orderBy, setOrderBy] = useState<keyof Job | undefined>("id" as keyof Job);
+  const [orderBy, setOrderBy] = useState<keyof Job | undefined>("id");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
-  // Dialog state
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
-  // Fetch mock data
+  
   useEffect(() => {
     setLoading(true);
-    fakeApi.getJobs().then((data) => {
-      setJobs(data);
+
+    const localJobs =
+      typeof window !== "undefined" ? localStorage.getItem("jobs") : null;
+
+    if (localJobs) {
+      const parsed = JSON.parse(localJobs);
+      setJobs(parsed);
+      setFilteredJobs(parsed);
       setLoading(false);
-    });
+    } else {
+      fakeApi.getJobs().then((data) => {
+        setJobs(data);
+        setFilteredJobs(data);
+        localStorage.setItem("jobs", JSON.stringify(data));
+        setLoading(false);
+      });
+    }
   }, []);
 
-  // Table Columns
+ 
+  const handleSearch = () => {
+    if (!query.trim()) {
+      setFilteredJobs(jobs);
+    } else {
+      const lower = query.toLowerCase();
+      setFilteredJobs(
+        jobs.filter(
+          (j) =>
+            j.title.toLowerCase().includes(lower) ||
+            j.customer.toLowerCase().includes(lower) ||
+            j.repairShop.toLowerCase().includes(lower)
+        )
+      );
+    }
+    setPage(0);
+  };
+
+  
+  const handleSortChange = (id: keyof Job) => {
+    const isAsc = orderBy === id && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(id);
+
+    const sorted = [...filteredJobs].sort((a, b) => {
+      const valA = a[id];
+      const valB = b[id];
+      if (valA === undefined && valB === undefined) return 0;
+      if (valA === undefined) return 1;
+      if (valB === undefined) return -1;
+      return (valA < valB ? -1 : 1) * (isAsc ? 1 : -1);
+    });
+    setFilteredJobs(sorted);
+  };
+
+  /
   const columns: Column<Job>[] = [
     { id: "id", label: "Job ID", sortable: true },
     {
@@ -68,66 +152,93 @@ export default function JobsPage() {
     {
       id: "actions",
       label: "Actions",
-      render: () => (
-        <IconButton size="small">
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
+      render: (row) => (
+        <ActionMenu
+          id={row.id.toString()}
+          type="job"
+          onArchive={(id) => console.log("Archived job:", id)}
+        />
       ),
     },
   ];
 
-  // Sorting Logic
-  const handleSortChange = (id: keyof Job) => {
-    const isAsc = orderBy === id && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(id);
-
-    const sorted = [...jobs].sort((a, b) => {
-      const valA = a[id];
-      const valB = b[id];
-      if (valA === undefined && valB === undefined) return 0;
-      if (valA === undefined) return 1;
-      if (valB === undefined) return -1;
-      return (valA < valB ? -1 : 1) * (isAsc ? 1 : -1);
-    });
-    setJobs(sorted);
-  };
-
   return (
-    <Box p={3}>
-      {/* Header */}
-      <Grid container alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h5" fontWeight={600}>
-          Job Management
-        </Typography>
-        <AppButton variant="contained" onClick={() => setOpen(true)}>
-          + Add Job
-        </AppButton>
-      </Grid>
+    <Fade in timeout={400}>
+      <Box p={3}>
+        {/* Header */}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="h5" fontWeight={600}>
+            Job Management
+          </Typography>
+          <AppButton variant="contained" onClick={() => setOpen(true)}>
+            + Add Job
+          </AppButton>
+        </Stack>
 
-      {/* Table */}
-      <AppTable<Job>
-        columns={columns}
-        data={jobs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-        loading={loading}
-        total={jobs.length}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        orderBy={orderBy}
-        order={order}
-        onPageChange={setPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSortChange={handleSortChange}
-      />
+        
+        <Box mb={2} display="flex" justifyContent="flex-start">
+          <SearchContainer>
+            <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
+            <StyledInputBase
+              placeholder="Search by Title, Customer, or Repair Shop"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
+            />
+            <AppButton
+              variant="contained"
+              size="small"
+              onClick={handleSearch}
+              sx={{ ml: 1, borderRadius: "9999px" }}
+            >
+              Search
+            </AppButton>
+          </SearchContainer>
+        </Box>
 
-      {/* Add Job Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Add New Job</DialogTitle>
-        <DialogContent>
-          <AddJobForm />
-        </DialogContent>
-        <DialogActions />
-      </Dialog>
-    </Box>
+        {/* Table with fade & click transition */}
+        <AppTable<Job>
+          columns={columns}
+          data={filteredJobs.slice(
+            page * rowsPerPage,
+            page * rowsPerPage + rowsPerPage
+          )}
+          loading={loading}
+          total={filteredJobs.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          orderBy={orderBy}
+          order={order}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSortChange={handleSortChange}
+          onRowClick={(row) => {
+            const element = document.body;
+            element.style.transition = "opacity 0.3s ease";
+            element.style.opacity = "0.3";
+            setTimeout(() => {
+              router.push(`/jobs/${row.id}`);
+              element.style.opacity = "1";
+            }, 300);
+          }}
+        />
+
+        
+        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle>Add New Job</DialogTitle>
+          <DialogContent>
+            <AddJobForm />
+          </DialogContent>
+          <DialogActions />
+        </Dialog>
+      </Box>
+    </Fade>
   );
 }

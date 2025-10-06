@@ -4,23 +4,26 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Grid,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   InputBase,
+  Fade,
+  Stack,
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
+
+import { useRouter } from "next/navigation";
 
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
 import { fakeApi, Shop } from "@/lib/fakeApi";
-import  { MoreVert as MoreVertIcon } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { AddShopForm } from "@/components/ui/AddShopForm";
 import ActionMenu from "@/components/ui/ActionMenu";
+
 
 const SearchContainer = styled("div")(({ theme }) => ({
   display: "flex",
@@ -52,6 +55,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function ShopsPage() {
   const theme = useTheme();
+  const router = useRouter();
 
   const [shops, setShops] = useState<Shop[]>([]);
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
@@ -65,6 +69,7 @@ export default function ShopsPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
+  // 🧩 Fetch mock data
   useEffect(() => {
     setLoading(true);
     fakeApi.getShops().then((data) => {
@@ -74,6 +79,7 @@ export default function ShopsPage() {
     });
   }, []);
 
+  // 🔍 Handle search
   const handleSearch = () => {
     if (!query.trim()) {
       setFilteredShops(shops);
@@ -91,6 +97,7 @@ export default function ShopsPage() {
     setPage(0);
   };
 
+  // 🔄 Sorting logic
   const handleSortChange = (id: keyof Shop) => {
     const isAsc = orderBy === id && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -107,6 +114,7 @@ export default function ShopsPage() {
     setFilteredShops(sorted);
   };
 
+  // 🧱 Table columns
   const columns: Column<Shop>[] = [
     { id: "id", label: "Shop ID", sortable: true },
     { id: "name", label: "Name", sortable: true },
@@ -120,78 +128,95 @@ export default function ShopsPage() {
     { id: "postalCode", label: "Postal Code", sortable: true },
     { id: "contact", label: "Contact", sortable: true },
     { id: "email", label: "Email", sortable: true },
-    {
-      id: "actions",
-      label: "Actions",
-      render: () => (
-        <IconButton size="small">
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-      ),
-    },
+     {
+    id: "actions",
+    label: "Actions",
+    render: (row) => (
+      <ActionMenu
+        id={row.id.replace("#", "")}
+        type="shop"
+        onArchive={(id) => console.log("Archived shop:", id)}
+      />
+    ),
+  },
   ];
 
   return (
-    <Box p={3}>
-      {/* Header */}
-      <Grid container alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h5" fontWeight={600}>
-          Shops Overview
-        </Typography>
-        <AppButton variant="contained" onClick={() => setOpen(true)}>
-         + Add New Shop
-        </AppButton>
-      </Grid>
-
-      {/* Search */}
-      <Box mb={2} display="flex" justifyContent="flex-start">
-        <SearchContainer>
-          <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
-          <StyledInputBase
-            placeholder="Enter Shop ID, Name, Address"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSearch();
-            }}
-          />
-          <AppButton
-            variant="contained"
-            size="small"
-            onClick={handleSearch}
-            sx={{ ml: 1, borderRadius: "9999px" }}
-          >
-            Search
+    <Fade in timeout={400}>
+      <Box p={3}>
+        {/* Header */}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="h5" fontWeight={600}>
+            Shops Overview
+          </Typography>
+          <AppButton variant="contained" onClick={() => setOpen(true)}>
+            + Add New Shop
           </AppButton>
-        </SearchContainer>
+        </Stack>
+
+        {/* Search Bar */}
+        <Box mb={2} display="flex" justifyContent="flex-start">
+          <SearchContainer>
+            <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
+            <StyledInputBase
+              placeholder="Enter Shop ID, Name, or Address"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
+            />
+            <AppButton
+              variant="contained"
+              size="small"
+              onClick={handleSearch}
+              sx={{ ml: 1, borderRadius: "9999px" }}
+            >
+              Search
+            </AppButton>
+          </SearchContainer>
+        </Box>
+
+        {/* Table with animation & navigation */}
+        <AppTable<Shop>
+          columns={columns}
+          data={filteredShops.slice(
+            page * rowsPerPage,
+            page * rowsPerPage + rowsPerPage
+          )}
+          loading={loading}
+          total={filteredShops.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          orderBy={orderBy}
+          order={order}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSortChange={handleSortChange}
+          // ✅ Same smooth transition as UsersPage
+          onRowClick={(row) => {
+            const element = document.body;
+            element.style.transition = "opacity 0.3s ease";
+            element.style.opacity = "0.3";
+            setTimeout(() => {
+              router.push(`/shops/${row.id.replace("#", "")}`);
+              element.style.opacity = "1";
+            }, 300);
+          }}
+        />
+
+        {/* Add Shop Dialog */}
+        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle>Add New Shop</DialogTitle>
+          <AddShopForm />
+          <DialogActions />
+        </Dialog>
       </Box>
-
-      {/* Table */}
-      <AppTable<Shop>
-        columns={columns}
-        data={filteredShops.slice(
-          page * rowsPerPage,
-          page * rowsPerPage + rowsPerPage
-        )}
-        loading={loading}
-        total={filteredShops.length}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        orderBy={orderBy}
-        order={order}
-        onPageChange={setPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSortChange={handleSortChange}
-      />
-
-      {/* Add Shop Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle> Add New Shop</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2">Shop form goes here…</Typography>
-        </DialogContent>
-        <DialogActions />
-      </Dialog>
-    </Box>
+    </Fade>
   );
 }

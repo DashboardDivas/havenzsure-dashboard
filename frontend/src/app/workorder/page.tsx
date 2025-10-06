@@ -6,7 +6,6 @@ import {
   Avatar,
   Box,
   Typography,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -96,13 +95,14 @@ export default function WorkOrdersPage() {
       ),
     },
     { id: "email", label: "Email", sortable: true },
-    {id: "actions",
-      label: "Actions",
-      render: (row) => (
-        <ActionMenu
-          onView={() => console.log("View", row.id)}
-          onEdit={() => console.log("Edit", row.id)}
-          onArchive={() => console.log("Archive", row.id)}
+    {
+  id: "actions",
+  label: "Actions",
+  render: (row) => (
+    <ActionMenu
+      id={row.id.replace("Wo-", "")}
+      type="workorder"
+      onArchive={(id) => console.log("Archived work order:", id)}
     />
   ),
 },
@@ -138,7 +138,7 @@ export default function WorkOrdersPage() {
 
       {/* Filter Bar (scrolls naturally, interactive icons) */}
       <Box
-        mb={3} // margin-bottom to separate from table
+        mb={3} 
         sx={{
           borderRadius: 3,
           p: 1.5,

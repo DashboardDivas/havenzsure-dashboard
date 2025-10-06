@@ -1,8 +1,8 @@
-  // src/theme/colorSchemes.ts
+ 
 
   import { PaletteOptions } from "@mui/material/styles";
 
-  // 🌞 Light Theme
+
   export const lightPalette: PaletteOptions = {
     mode: "light",
     primary: {
@@ -45,7 +45,7 @@
     },
   };
 
-  // 🌙 Dark Theme
+  
   export const darkPalette: PaletteOptions = {
     mode: "dark",
     primary: { main: "#8C57FF" },
