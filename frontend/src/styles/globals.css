@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base reset & font */
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: theme("fontFamily.sans");
+  height: 100%;
+  width: 100%;
+}
+
+/* 🌞 Light Theme (Default) */
+body[data-theme="light"] {
+  --color-primary: #8C57FF;
+  --color-primary-light: #A379FF;
+  --color-primary-dark: #7E4EE6;
+
+  --color-secondary: #8A8D93;
+  --color-error: #FF4C51;
+  --color-warning: #FFB400;
+  --color-info: #16B1FF;
+  --color-success: #56CA00;
+
+  --color-bg-default: #FFFFFF;
+  --color-bg-paper: #F9FAFB;
+
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #555555;
+}
+
+/* 🌙 Dark Theme */
+body[data-theme="dark"] {
+  --color-primary: #8C57FF;
+  --color-secondary: #8A8D93;
+  --color-error: #FF4C51;
+  --color-warning: #FFB400;
+  --color-info: #16B1FF;
+  --color-success: #56CA00;
+
+  --color-bg-default: #121212;
+  --color-bg-paper: #1E1E1E;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #AAAAAA;
+}
+
+/* 🏢 Corporate Blue Theme */
+body[data-theme="corporate"] {
+  --color-primary: #1976D2;
+  --color-primary-light: #4D9FFF;
+  --color-primary-dark: #004BA0;
+
+  --color-secondary: #455A64;
+  --color-error: #FF4C51;
+  --color-warning: #FFB400;
+  --color-info: #16B1FF;
+  --color-success: #56CA00;
+
+  --color-bg-default: #F4F6F8;
+  --color-bg-paper: #FFFFFF;
+
+  --color-text-primary: #0D1B2A;
+  --color-text-secondary: #445566;
+}
+
+/* Tailwind bridge: use these CSS vars as utility classes */
+:root {
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+/* Example utility override */
+.btn {
+  @apply px-4 py-2 rounded-md font-semibold;
+  background-color: var(--color-primary);
+  color: white;
+}
