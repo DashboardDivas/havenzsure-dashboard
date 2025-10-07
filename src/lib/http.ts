@@ -1,4 +1,4 @@
-// src/lib/http.ts
+
 export class ApiError extends Error {
   constructor(public message: string, public status: number, public body?: unknown) { super(message); }
 }

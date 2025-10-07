@@ -1,5 +1,5 @@
 import { http } from "../http";
-import type { Shop, ShopStatus, ShopCreate, ShopUpdate} from "@/types/shop";
+import type { Shop, ShopStatus} from "@/types/shop";
 
 
 export type ShopListParams = {
@@ -20,23 +20,27 @@ function qs(params?: Record<string, any>) {
   return s ? `?${s}` : "";
 }
 
+const SHOP_PREFIX = '/shop';
+
 export const ShopsAPI = {
-  list: () => http<Shop[]>("/api/shops"),
+    list: (params?: ShopListParams) =>
+    http<{ items: Shop[]; total: number; page: number; pageSize: number }>(
+      `${SHOP_PREFIX}${qs(params)}`
+    ),
 
-  read: (id: number) =>
-    http<Shop>(`/api/shops/${id}`),
+  read: (id: number | string) =>
+    http<Shop>(`${SHOP_PREFIX}/${id}`),
 
-  create: (data: ShopCreate) =>
-    http<Shop>(`/api/shops`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+  create: (payload: Partial<Shop>) =>
+    http<Shop>(SHOP_PREFIX, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     }),
 
-  update: (id: number, patch: ShopUpdate) =>
-    http<Shop>(`/api/shops/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
+  update: (id: number | string, payload: Partial<Shop>) =>
+    http<Shop>(`${SHOP_PREFIX}/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     }),
+
 };

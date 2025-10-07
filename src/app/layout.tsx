@@ -3,6 +3,10 @@ import './globals.css';
 import Providers from '@/components/layout/Providers';
 import AppShell from '@/components/layout/AppShell';
 
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
+  import('@/mocks/browser').then(m => m.enableMocks());
+}
+
 export const metadata: Metadata = {
   title: 'HavenzSure',
   description: 'MUI + Next.js prototype',

@@ -15,8 +15,9 @@ export default function ShopPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 确保 ShopsAPI.list() 内部使用 fetch(..., { cache: "no-store" })
-    ShopsAPI.list().then(setRows).finally(() => setLoading(false));
+    ShopsAPI.list()
+      .then((res) => setRows(res.items))
+      .finally(() => setLoading(false));
   }, []);
 
   const columns: GridColDef<Shop>[] = [
