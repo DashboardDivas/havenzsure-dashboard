@@ -17,36 +17,42 @@ import {
   Typography,
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
-import { fakeApi } from "@/lib/fakeApi";
+import { shopApi, Shop } from "@/api/shopApi";
 
 interface AddShopData {
-  name: string;
-  owner: string;
+  shopName: string;
+  contactName: string;
   status: "active" | "inactive";
   address: string;
   postalCode: string;
-  contact: string;
+  city: string;
+  province: string;
+  phone: string;
   email: string;
 }
 
 export function AddShopForm() {
   const [formData, setFormData] = useState<AddShopData>({
-    name: "",
-    owner: "",
+    shopName: "",
+    contactName: "",
     status: "active",
     address: "",
     postalCode: "",
-    contact: "",
+    city: "",
+    province: "",
+    phone: "",
     email: "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof AddShopData, string>>>({});
-  const [existingOwners, setExistingOwners] = useState<string[]>([]);
+  const [existingContacts, setExistingContacts] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
+  // 🧩 Load existing contacts (optional dropdown)
   useEffect(() => {
-    fakeApi.getShops().then((shops) => {
-      const owners = Array.from(new Set(shops.map((s) => s.owner)));
-      setExistingOwners(owners);
+    shopApi.getShops().then((shops) => {
+      const contacts = Array.from(new Set(shops.map((s) => s.contactName)));
+      setExistingContacts(contacts);
     });
   }, []);
 
@@ -58,33 +64,49 @@ export function AddShopForm() {
   const validateForm = () => {
     const newErrors: Partial<Record<keyof AddShopData, string>> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Required";
-    if (!formData.owner.trim()) newErrors.owner = "Required";
+    if (!formData.shopName.trim()) newErrors.shopName = "Required";
+    if (!formData.contactName.trim()) newErrors.contactName = "Required";
     if (!formData.address.trim()) newErrors.address = "Required";
+    if (!formData.city.trim()) newErrors.city = "Required";
+    if (!formData.province.trim()) newErrors.province = "Required";
     if (!formData.postalCode.trim()) newErrors.postalCode = "Required";
-    if (!formData.contact.trim()) newErrors.contact = "Required";
+    if (!formData.phone.trim()) newErrors.phone = "Required";
     if (!formData.email.trim()) newErrors.email = "Required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("✅ Shop Form Submitted:", formData);
-      alert("Shop has been added successfully!");
+    if (!validateForm()) return;
+
+    try {
+      setSubmitting(true);
+      const createdShop = await shopApi.createShop(formData);
+      console.log("✅ Shop created:", createdShop);
+      alert(`Shop "${createdShop.shopName}" added successfully!`);
+
+      // Reset form
+      handleCancel();
+    } catch (err) {
+      console.error("❌ Failed to create shop:", err);
+      alert("Failed to create shop. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleCancel = () => {
     setFormData({
-      name: "",
-      owner: "",
+      shopName: "",
+      contactName: "",
       status: "active",
       address: "",
       postalCode: "",
-      contact: "",
+      city: "",
+      province: "",
+      phone: "",
       email: "",
     });
     setErrors({});
@@ -124,39 +146,39 @@ export function AddShopForm() {
                     label="Shop Name"
                     required
                     fullWidth
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    error={!!errors.name}
-                    helperText={errors.name}
+                    value={formData.shopName}
+                    onChange={(e) => handleChange("shopName", e.target.value)}
+                    error={!!errors.shopName}
+                    helperText={errors.shopName}
                     placeholder="e.g., QuickFix Garage"
                   />
 
-                  {/* Owner */}
+                  {/* Contact Name */}
                   <FormControl fullWidth required>
-                    <InputLabel>Owner</InputLabel>
+                    <InputLabel>Contact Name</InputLabel>
                     <Select
-                      value={formData.owner}
-                      label="Owner"
-                      onChange={(e) => handleChange("owner", e.target.value)}
+                      value={formData.contactName}
+                      label="Contact Name"
+                      onChange={(e) => handleChange("contactName", e.target.value)}
                     >
-                      {existingOwners.map((owner) => (
-                        <MenuItem key={owner} value={owner}>
-                          {owner}
+                      {existingContacts.map((contact) => (
+                        <MenuItem key={contact} value={contact}>
+                          {contact}
                         </MenuItem>
                       ))}
                       <MenuItem value="" disabled>
                         ────────────
                       </MenuItem>
-                      <MenuItem value="Other">Add New Owner</MenuItem>
+                      <MenuItem value="Other">Add New Contact</MenuItem>
                     </Select>
-                    {errors.owner && (
+                    {errors.contactName && (
                       <Typography variant="caption" color="error">
-                        {errors.owner}
+                        {errors.contactName}
                       </Typography>
                     )}
                   </FormControl>
 
-                  {/* Address & Postal Code */}
+                  {/* Address Details */}
                   <Box display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
                     <TextField
                       label="Address"
@@ -178,16 +200,38 @@ export function AddShopForm() {
                     />
                   </Box>
 
-                  {/* Contact & Email */}
+                  {/* City & Province */}
                   <Box display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
                     <TextField
-                      label="Contact Number"
+                      label="City"
                       required
                       fullWidth
-                      value={formData.contact}
-                      onChange={(e) => handleChange("contact", e.target.value)}
-                      error={!!errors.contact}
-                      helperText={errors.contact}
+                      value={formData.city}
+                      onChange={(e) => handleChange("city", e.target.value)}
+                      error={!!errors.city}
+                      helperText={errors.city}
+                    />
+                    <TextField
+                      label="Province"
+                      required
+                      fullWidth
+                      value={formData.province}
+                      onChange={(e) => handleChange("province", e.target.value)}
+                      error={!!errors.province}
+                      helperText={errors.province}
+                    />
+                  </Box>
+
+                  {/* Phone & Email */}
+                  <Box display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
+                    <TextField
+                      label="Phone"
+                      required
+                      fullWidth
+                      value={formData.phone}
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                      error={!!errors.phone}
+                      helperText={errors.phone}
                       placeholder="555-123-4567"
                     />
                     <TextField
@@ -236,10 +280,12 @@ export function AddShopForm() {
                 <AppButton
                   type="submit"
                   variant="contained"
+                  color="primary"
+                  disabled={submitting}
                   size="large"
                   sx={{ flex: { xs: 1, sm: "initial" }, ml: { sm: "auto" } }}
                 >
-                  Add Shop
+                  {submitting ? "Adding..." : "Add Shop"}
                 </AppButton>
               </Box>
             </Box>

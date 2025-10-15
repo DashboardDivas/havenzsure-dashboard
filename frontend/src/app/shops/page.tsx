@@ -6,7 +6,6 @@ import {
   Typography,
   Dialog,
   DialogTitle,
-  DialogContent,
   DialogActions,
   InputBase,
   Fade,
@@ -14,17 +13,16 @@ import {
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
-
 import { useRouter } from "next/navigation";
 
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { fakeApi, Shop } from "@/lib/fakeApi";
+import { shopApi, Shop } from "@/api/shopApi"; // ✅ UPDATED
 import { AddShopForm } from "@/components/ui/AddShopForm";
 import ActionMenu from "@/components/ui/ActionMenu";
 
-
+// 🔍 Styled components
 const SearchContainer = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -69,14 +67,21 @@ export default function ShopsPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  // 🧩 Fetch mock data
+  // 🧩 Fetch data from real API
   useEffect(() => {
-    setLoading(true);
-    fakeApi.getShops().then((data) => {
-      setShops(data);
-      setFilteredShops(data);
-      setLoading(false);
-    });
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await shopApi.getShops();
+        setShops(data);
+        setFilteredShops(data);
+      } catch (err) {
+        console.error("Error fetching shops:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // 🔍 Handle search
@@ -88,8 +93,8 @@ export default function ShopsPage() {
       setFilteredShops(
         shops.filter(
           (s) =>
-            s.name.toLowerCase().includes(lower) ||
-            s.id.toLowerCase().includes(lower) ||
+            s.shopName.toLowerCase().includes(lower) ||
+            s.code.toLowerCase().includes(lower) ||
             s.address.toLowerCase().includes(lower)
         )
       );
@@ -117,7 +122,7 @@ export default function ShopsPage() {
   // 🧱 Table columns
   const columns: Column<Shop>[] = [
     { id: "id", label: "Shop ID", sortable: true },
-    { id: "name", label: "Name", sortable: true },
+    { id: "shopName", label: "Shop Name", sortable: true },
     {
       id: "status",
       label: "Status",
@@ -126,19 +131,20 @@ export default function ShopsPage() {
     },
     { id: "address", label: "Address", sortable: true },
     { id: "postalCode", label: "Postal Code", sortable: true },
-    { id: "contact", label: "Contact", sortable: true },
+    { id: "contactName", label: "Contact Name", sortable: true },
+    { id: "phone", label: "Phone", sortable: true },
     { id: "email", label: "Email", sortable: true },
-     {
-    id: "actions",
-    label: "Actions",
-    render: (row) => (
-      <ActionMenu
-        id={row.id.replace("#", "")}
-        type="shop"
-        onArchive={(id) => console.log("Archived shop:", id)}
-      />
-    ),
-  },
+    {
+      id: "actions",
+      label: "Actions",
+      render: (row) => (
+        <ActionMenu
+          id={row.code} // ✅ Use code instead of id.replace
+          type="shop"
+          onArchive={(id) => console.log("Archived shop:", id)}
+        />
+      ),
+    },
   ];
 
   return (
@@ -164,7 +170,7 @@ export default function ShopsPage() {
           <SearchContainer>
             <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
             <StyledInputBase
-              placeholder="Enter Shop ID, Name, or Address"
+              placeholder="Enter Shop Name, Code, or Address"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -182,7 +188,7 @@ export default function ShopsPage() {
           </SearchContainer>
         </Box>
 
-        {/* Table with animation & navigation */}
+        {/* Table */}
         <AppTable<Shop>
           columns={columns}
           data={filteredShops.slice(
@@ -198,13 +204,12 @@ export default function ShopsPage() {
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
           onSortChange={handleSortChange}
-          // ✅ Same smooth transition as UsersPage
           onRowClick={(row) => {
             const element = document.body;
             element.style.transition = "opacity 0.3s ease";
             element.style.opacity = "0.3";
             setTimeout(() => {
-              router.push(`/shops/${row.id.replace("#", "")}`);
+              router.push(`/shops/${row.code}`); // ✅ Navigate by code
               element.style.opacity = "1";
             }, 300);
           }}

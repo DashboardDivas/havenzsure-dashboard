@@ -22,7 +22,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { fakeApi, Shop } from "@/lib/fakeApi";
+import { shopApi, Shop } from "@/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {
@@ -31,22 +31,21 @@ export default function ShopDetailPage() {
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🧱 Edit dialog state
+  // Edit dialog state
   const [openEdit, setOpenEdit] = useState(false);
   const [editedShop, setEditedShop] = useState<Shop | null>(null);
 
+  // Fetch shop details
   useEffect(() => {
     if (!id) return;
     let mounted = true;
 
     (async () => {
       setLoading(true);
-      const data = await fakeApi.getShops();
+      const data = await shopApi.getShops();
+
       if (!mounted) return;
-
-      // Match route param "001" to API ID "#001"
-      const found = data.find((s) => s.id.replace("#", "") === String(id));
-
+      const found = data.find((s) => s.code === String(id));
       setShop(found || null);
       setLoading(false);
     })();
@@ -56,6 +55,7 @@ export default function ShopDetailPage() {
     };
   }, [id]);
 
+  // Open edit dialog
   const handleEditOpen = () => {
     if (!shop) return;
     setEditedShop({ ...shop });
@@ -68,26 +68,25 @@ export default function ShopDetailPage() {
   };
 
   const handleSave = async () => {
-  if (!editedShop) return;
-  try {
-    setLoading(true);
+    if (!editedShop) return;
+    try {
+      setLoading(true);
 
-    // Persist the update to the fake API
-    const updated = await fakeApi.updateShop(editedShop);
+      const updated = await shopApi.updateShop(editedShop.code, editedShop);
 
-    // Update UI with saved data
-    setShop(updated);
-    setEditedShop(updated);
-    setOpenEdit(false);
+      setShop(updated);
+      setEditedShop(updated);
+      setOpenEdit(false);
 
-    console.log("✅ Shop updated globally:", updated);
-  } catch (err) {
-    console.error("❌ Failed to update shop:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      console.log("✅ Shop updated globally:", updated);
+    } catch (err) {
+      console.error("❌ Failed to update shop:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Loading state
   if (loading) {
     return (
       <Box display="flex" alignItems="center" justifyContent="center" height="70vh">
@@ -96,6 +95,7 @@ export default function ShopDetailPage() {
     );
   }
 
+  // Shop not found
   if (!shop) {
     return (
       <Box p={4}>
@@ -107,6 +107,7 @@ export default function ShopDetailPage() {
     );
   }
 
+  // ✅ Main content
   return (
     <Box p={4}>
       {/* Header */}
@@ -119,6 +120,7 @@ export default function ShopDetailPage() {
         </Typography>
       </Box>
 
+      {/* Main Card */}
       <Paper elevation={2} sx={{ p: 4, borderRadius: 3, maxWidth: 900, mx: "auto" }}>
         {/* Top Row: Shop Name + Status + Actions */}
         <Stack
@@ -130,10 +132,10 @@ export default function ShopDetailPage() {
         >
           <Box>
             <Typography variant="h6" noWrap>
-              {shop.name}
+              {shop.shopName}
             </Typography>
             <Typography color="text.secondary" noWrap>
-              Owned by: {shop.owner}
+              Contact: {shop.contactName}
             </Typography>
             <Chip
               label={shop.status}
@@ -158,19 +160,7 @@ export default function ShopDetailPage() {
         {/* Shop Info */}
         <List disablePadding>
           <ListItem>
-            <ListItemText primary="Shop ID" secondary={shop.id} />
-          </ListItem>
-          <Divider component="li" />
-          <ListItem>
-            <ListItemText primary="Owner" secondary={shop.owner} />
-          </ListItem>
-          <Divider component="li" />
-          <ListItem>
-            <ListItemText primary="Email" secondary={shop.email} />
-          </ListItem>
-          <Divider component="li" />
-          <ListItem>
-            <ListItemText primary="Contact" secondary={shop.contact} />
+            <ListItemText primary="Shop Code" secondary={shop.code} />
           </ListItem>
           <Divider component="li" />
           <ListItem>
@@ -178,7 +168,30 @@ export default function ShopDetailPage() {
           </ListItem>
           <Divider component="li" />
           <ListItem>
+            <ListItemText primary="City" secondary={shop.city} />
+          </ListItem>
+          <Divider component="li" />
+          <ListItem>
+            <ListItemText primary="Province" secondary={shop.province} />
+          </ListItem>
+          <Divider component="li" />
+          <ListItem>
             <ListItemText primary="Postal Code" secondary={shop.postalCode} />
+          </ListItem>
+          <Divider component="li" />
+          <ListItem>
+            <ListItemText primary="Phone" secondary={shop.phone} />
+          </ListItem>
+          <Divider component="li" />
+          <ListItem>
+            <ListItemText primary="Email" secondary={shop.email} />
+          </ListItem>
+          <Divider component="li" />
+          <ListItem>
+            <ListItemText
+              primary="Created At"
+              secondary={shop.createdAt ? new Date(shop.createdAt).toLocaleString() : "—"}
+            />
           </ListItem>
         </List>
       </Paper>
@@ -191,14 +204,20 @@ export default function ShopDetailPage() {
             <Stack spacing={2}>
               <TextField
                 label="Shop Name"
-                value={editedShop.name}
-                onChange={(e) => handleEditChange("name", e.target.value)}
+                value={editedShop.shopName}
+                onChange={(e) => handleEditChange("shopName", e.target.value)}
                 fullWidth
               />
               <TextField
-                label="Owner"
-                value={editedShop.owner}
-                onChange={(e) => handleEditChange("owner", e.target.value)}
+                label="Contact Name"
+                value={editedShop.contactName}
+                onChange={(e) => handleEditChange("contactName", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Phone"
+                value={editedShop.phone}
+                onChange={(e) => handleEditChange("phone", e.target.value)}
                 fullWidth
               />
               <TextField
@@ -208,15 +227,21 @@ export default function ShopDetailPage() {
                 fullWidth
               />
               <TextField
-                label="Contact"
-                value={editedShop.contact}
-                onChange={(e) => handleEditChange("contact", e.target.value)}
-                fullWidth
-              />
-              <TextField
                 label="Address"
                 value={editedShop.address}
                 onChange={(e) => handleEditChange("address", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="City"
+                value={editedShop.city}
+                onChange={(e) => handleEditChange("city", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Province"
+                value={editedShop.province}
+                onChange={(e) => handleEditChange("province", e.target.value)}
                 fullWidth
               />
               <TextField
