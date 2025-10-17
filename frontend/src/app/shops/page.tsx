@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { shopApi, Shop } from "@/api/shopApi"; // ✅ UPDATED
+import { shopApi, Shop } from "@/lib/api/shopApi"; // ✅ UPDATED
 import { AddShopForm } from "@/components/ui/AddShopForm";
 import ActionMenu from "@/components/ui/ActionMenu";
 

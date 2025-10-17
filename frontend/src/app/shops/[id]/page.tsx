@@ -22,7 +22,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { shopApi, Shop } from "@/api/shopApi";
+import { shopApi, Shop } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {

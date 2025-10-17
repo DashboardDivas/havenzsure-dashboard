@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
-import { shopApi, Shop } from "@/api/shopApi";
+import { shopApi, Shop } from "@/lib/api/shopApi";
 
 interface AddShopData {
   shopName: string;
