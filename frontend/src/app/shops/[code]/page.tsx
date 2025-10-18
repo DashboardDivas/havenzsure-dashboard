@@ -26,7 +26,7 @@ import { shopApi, Shop } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {
-  const { id } = useParams();
+  const { code } = useParams();
   const router = useRouter();
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function ShopDetailPage() {
 
   // Fetch shop details
   useEffect(() => {
-    if (!id) return;
+    if (!code) return;
     let mounted = true;
 
     (async () => {
@@ -45,7 +45,7 @@ export default function ShopDetailPage() {
       const data = await shopApi.getShops();
 
       if (!mounted) return;
-      const found = data.find((s) => s.code === String(id));
+      const found = data.find((s) => s.code === String(code));
       setShop(found || null);
       setLoading(false);
     })();
@@ -53,7 +53,7 @@ export default function ShopDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [code]);
 
   // Open edit dialog
   const handleEditOpen = () => {
@@ -68,17 +68,21 @@ export default function ShopDetailPage() {
   };
 
   const handleSave = async () => {
-    if (!editedShop) return;
+     if (!editedShop || !shop) return;
     try {
       setLoading(true);
-
-      const updated = await shopApi.updateShop(editedShop.code, editedShop);
+      //update shop with original shop code
+      const updated = await shopApi.updateShop(shop.code, editedShop);
 
       setShop(updated);
       setEditedShop(updated);
       setOpenEdit(false);
 
       console.log("✅ Shop updated globally:", updated);
+
+      if (updated.code !== shop.code) {
+      router.push(`/shops/${updated.code}`);
+    }
     } catch (err) {
       console.error("❌ Failed to update shop:", err);
     } finally {
@@ -201,7 +205,13 @@ export default function ShopDetailPage() {
         <DialogTitle>Edit Shop Details</DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {editedShop && (
-            <Stack spacing={2}>
+            <Stack spacing={2} mt={5}>
+              <TextField
+                label="Shop Code"
+                value={editedShop.code}
+                onChange={(e) => handleEditChange("code", e.target.value)}
+                fullWidth
+              />
               <TextField
                 label="Shop Name"
                 value={editedShop.shopName}
