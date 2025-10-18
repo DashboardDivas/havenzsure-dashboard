@@ -15,25 +15,65 @@ import {
   Card,
   CardContent,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Chip,
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
-import { fakeApi, WorkOrder } from "@/lib/fakeApi";
+import { fakeApi, WorkOrder, User } from "@/lib/fakeApi";
 import StatusChip from "@/components/ui/StatusChip";
 import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
 
+
 export default function OverviewTab() {
+  const [users, setUsers] = useState<User[] | null>([]);
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function loadWorkOrders() {
       setLoading(true);
+      setUsers(await fakeApi.getUsers());
       const data = await fakeApi.getWorkOrders();
       setWorkOrder(data[0]);
       setLoading(false);
     }
     loadWorkOrders();
   }, []);
+
+  const handleAssignClick = () => setAssignDialogOpen(true);
+
+  const handleAssignUser = (user: User) => {
+    setSelectedUser(user);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleAssignCancel = () => {
+    setAssignDialogOpen(false);
+    setSelectedUser(null);
+    setConfirmDialogOpen(false);
+  };
+
+  const handleConfirmYes = () => {
+    setAssignDialogOpen(false);
+    setConfirmDialogOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleConfirmNo = () => {
+    setConfirmDialogOpen(false);
+    setSelectedUser(null);
+  };
 
   if (loading) {
     return (
@@ -65,8 +105,12 @@ export default function OverviewTab() {
           Work Order Overview
         </Typography>
         <Box display="flex" justifyContent="flex-end" gap={1}>
-          <AppButton variant="outlined" startIcon={<Repeat />}>
-            Reassign
+          <AppButton
+            variant="outlined"
+            startIcon={<Repeat />}
+            onClick={handleAssignClick}
+          >
+            Assign
           </AppButton>
           <AppButton variant="outlined" color="error" startIcon={<Delete />}>
             Delete
@@ -80,6 +124,68 @@ export default function OverviewTab() {
           </AppButton>
         </Box>
       </Box>
+
+      {/* Assign Dialog */}
+      <Dialog open={assignDialogOpen} onClose={handleAssignCancel} maxWidth="xs" fullWidth>
+        <DialogTitle>Assign Work Order</DialogTitle>
+        <DialogContent>
+          <List>
+            {users?.map((user) => (
+              <ListItem
+                key={user.id}
+                onClick={() => handleAssignUser(user)}
+                sx={{ cursor: "pointer" }}
+              >
+                <ListItemAvatar>
+                  <Avatar src={user.avatar} alt={user.name} />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography fontWeight={600}>{user.name}</Typography>
+                      <Chip
+                        label={user.role}
+                        size="small"
+                        sx={{ ml: 1 }}
+                      />
+                    </Box>
+                  }
+                  secondary={
+                    <>
+                      <Typography variant="body2" color="text.secondary">
+                        Status: {user.status}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Repair Shop: {user.repairShop}
+                      </Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAssignCancel}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={handleConfirmNo} maxWidth="xs" fullWidth>
+        <DialogTitle>Confirm Assignment</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Assign work order to{" "}
+            <strong>{selectedUser?.name}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmNo}>No</Button>
+          <Button onClick={handleConfirmYes} variant="contained" color="primary">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Top Grid: Customer + Vehicle Info */}
       <Box
