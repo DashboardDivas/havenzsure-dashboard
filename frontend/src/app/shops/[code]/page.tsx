@@ -81,8 +81,8 @@ export default function ShopDetailPage() {
       console.log("✅ Shop updated globally:", updated);
 
       if (updated.code !== shop.code) {
-      router.push(`/shops/${updated.code}`);
-    }
+        router.push(`/shops/${updated.code}`);
+      }
     } catch (err) {
       console.error("❌ Failed to update shop:", err);
     } finally {
