@@ -61,7 +61,7 @@ export default function ShopsPage() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [orderBy, setOrderBy] = useState<keyof Shop | undefined>("id");
+  const [orderBy, setOrderBy] = useState<keyof Shop | undefined>("code");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [open, setOpen] = useState(false);
@@ -121,7 +121,7 @@ export default function ShopsPage() {
 
   // 🧱 Table columns
   const columns: Column<Shop>[] = [
-    { id: "id", label: "Shop ID", sortable: true },
+    { id: "code", label: "Shop Code", sortable: true },
     { id: "shopName", label: "Shop Name", sortable: true },
     {
       id: "status",
@@ -217,9 +217,7 @@ export default function ShopsPage() {
 
         {/* Add Shop Dialog */}
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-          <DialogTitle>Add New Shop</DialogTitle>
           <AddShopForm />
-          <DialogActions />
         </Dialog>
       </Box>
     </Fade>
