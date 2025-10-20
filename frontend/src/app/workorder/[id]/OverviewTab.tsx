@@ -33,7 +33,7 @@ import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
 
 
 export default function OverviewTab() {
-  const [users, setUsers] = useState<User[] | null>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
