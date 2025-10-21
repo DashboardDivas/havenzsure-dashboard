@@ -10,19 +10,21 @@ import {
   InputBase,
   Fade,
   Stack,
+  IconButton,
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useRouter } from "next/navigation";
 
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { shopApi, Shop } from "@/lib/api/shopApi"; // ✅ UPDATED
+import { shopApi, Shop } from "@/lib/api/shopApi";
 import { AddShopForm } from "@/components/ui/AddShopForm";
 import ActionMenu from "@/components/ui/ActionMenu";
 
-// 🔍 Styled components
+// Styled components
 const SearchContainer = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -37,7 +39,7 @@ const SearchContainer = styled("div")(({ theme }) => ({
       : alpha(theme.palette.common.black, 0.05),
   border: `1px solid ${theme.palette.divider}`,
   width: "100%",
-  maxWidth: 400,
+  maxWidth: 500,
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
@@ -67,7 +69,7 @@ export default function ShopsPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  // 🧩 Fetch data from real API
+  // Fetch data from backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -84,25 +86,25 @@ export default function ShopsPage() {
     fetchData();
   }, []);
 
-  // 🔍 Handle search
-  const handleSearch = () => {
+  // Handle live search
+  useEffect(() => {
     if (!query.trim()) {
       setFilteredShops(shops);
-    } else {
-      const lower = query.toLowerCase();
-      setFilteredShops(
-        shops.filter(
-          (s) =>
-            s.shopName.toLowerCase().includes(lower) ||
-            s.code.toLowerCase().includes(lower) ||
-            s.address.toLowerCase().includes(lower)
-        )
-      );
+      setPage(0);
+      return;
     }
+    const lower = query.toLowerCase();
+    const filtered = shops.filter(
+      (s) =>
+        s.shopName.toLowerCase().includes(lower) ||
+        s.code.toLowerCase().includes(lower) ||
+        s.address.toLowerCase().includes(lower)
+    );
+    setFilteredShops(filtered);
     setPage(0);
-  };
+  }, [query, shops]);
 
-  // 🔄 Sorting logic
+  //  Sorting logic
   const handleSortChange = (id: keyof Shop) => {
     const isAsc = orderBy === id && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -119,27 +121,43 @@ export default function ShopsPage() {
     setFilteredShops(sorted);
   };
 
-  // 🧱 Table columns
+  //  Highlight helper
+  const highlightMatch = (text: string, q: string) => {
+    if (!q.trim()) return text;
+    const regex = new RegExp(`(${q})`, "gi");
+    const parts = text.split(regex);
+    return (
+      <>
+        {parts.map((part, i) =>
+          regex.test(part) ? (
+            <mark key={i} style={{ backgroundColor: "#ffe58f" }}>
+              {part}
+            </mark>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </>
+    );
+  };
+
+  // Table columns
   const columns: Column<Shop>[] = [
     { id: "id", label: "Shop ID", sortable: true },
-    { id: "shopName", label: "Shop Name", sortable: true },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      render: (row) => <StatusChip status={row.status} />,
-    },
-    { id: "address", label: "Address", sortable: true },
+    { id: "shopName", label: "Shop Name", sortable: true, render: (row) => highlightMatch(row.shopName, query) },
+    { id: "status", label: "Status", sortable: true, render: (row) => <StatusChip status={row.status} /> },
+    { id: "address", label: "Address", sortable: true, render: (row) => highlightMatch(row.address, query) },
     { id: "postalCode", label: "Postal Code", sortable: true },
     { id: "contactName", label: "Contact Name", sortable: true },
     { id: "phone", label: "Phone", sortable: true },
     { id: "email", label: "Email", sortable: true },
+    { id: "code", label: "Code", sortable: true, render: (row) => highlightMatch(row.code, query) },
     {
       id: "actions",
       label: "Actions",
       render: (row) => (
         <ActionMenu
-          id={row.code} // ✅ Use code instead of id.replace
+          id={row.code}
           type="shop"
           onArchive={(id) => console.log("Archived shop:", id)}
         />
@@ -147,54 +165,45 @@ export default function ShopsPage() {
     },
   ];
 
+  const handleClear = () => setQuery("");
+
   return (
     <Fade in timeout={400}>
       <Box p={3}>
         {/* Header */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={2}
-        >
-          <Typography variant="h5" fontWeight={600}>
-            Shops Overview
-          </Typography>
-          <AppButton variant="contained" onClick={() => setOpen(true)}>
-            + Add New Shop
-          </AppButton>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+          <Typography variant="h5" fontWeight={600}>Shops Overview</Typography>
+          <AppButton variant="contained" onClick={() => setOpen(true)}>+ Add New Shop</AppButton>
         </Stack>
 
         {/* Search Bar */}
-        <Box mb={2} display="flex" justifyContent="flex-start">
+        <Box mb={2} display="flex" flexDirection="column" gap={1}>
           <SearchContainer>
             <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
             <StyledInputBase
               placeholder="Enter Shop Name, Code, or Address"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
             />
-            <AppButton
-              variant="contained"
-              size="small"
-              onClick={handleSearch}
-              sx={{ ml: 1, borderRadius: "9999px" }}
-            >
-              Search
-            </AppButton>
+            {query && (
+              <IconButton size="small" onClick={handleClear}>
+                <ClearIcon />
+              </IconButton>
+            )}
           </SearchContainer>
+
+          {/* Found X shops text */}
+          {query && (
+            <Typography variant="body2" color="text.secondary">
+              Found {filteredShops.length} shop{filteredShops.length !== 1 ? "s" : ""} matching "{query}"
+            </Typography>
+          )}
         </Box>
 
         {/* Table */}
         <AppTable<Shop>
           columns={columns}
-          data={filteredShops.slice(
-            page * rowsPerPage,
-            page * rowsPerPage + rowsPerPage
-          )}
+          data={filteredShops.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
           loading={loading}
           total={filteredShops.length}
           page={page}
@@ -209,7 +218,7 @@ export default function ShopsPage() {
             element.style.transition = "opacity 0.3s ease";
             element.style.opacity = "0.3";
             setTimeout(() => {
-              router.push(`/shops/${row.code}`); // ✅ Navigate by code
+              router.push(`/shops/${row.code}`);
               element.style.opacity = "1";
             }, 300);
           }}
