@@ -15,11 +15,13 @@ import {
   Stack,
   TextField,
   Typography,
+  Autocomplete, // ✅ Added
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
 import { shopApi, Shop } from "@/lib/api/shopApi";
 
 interface AddShopData {
+  code: string;
   shopName: string;
   contactName: string;
   status: "active" | "inactive";
@@ -33,6 +35,7 @@ interface AddShopData {
 
 export function AddShopForm() {
   const [formData, setFormData] = useState<AddShopData>({
+    code: "",
     shopName: "",
     contactName: "",
     status: "active",
@@ -64,6 +67,7 @@ export function AddShopForm() {
   const validateForm = () => {
     const newErrors: Partial<Record<keyof AddShopData, string>> = {};
 
+    if (!formData.code.trim()) newErrors.code = "Required";
     if (!formData.shopName.trim()) newErrors.shopName = "Required";
     if (!formData.contactName.trim()) newErrors.contactName = "Required";
     if (!formData.address.trim()) newErrors.address = "Required";
@@ -99,6 +103,7 @@ export function AddShopForm() {
 
   const handleCancel = () => {
     setFormData({
+      code: "",
       shopName: "",
       contactName: "",
       status: "active",
@@ -115,13 +120,11 @@ export function AddShopForm() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "70vh",
         background: "linear-gradient(135deg, #e3f2fd 0%, #ffffff 50%, #f3e5f5 100%)",
-        py: 4,
-        px: 2,
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         <Card elevation={12}>
           <CardHeader
             title={<Typography variant="h4">Add New Shop</Typography>}
@@ -141,6 +144,16 @@ export function AddShopForm() {
                 <Divider sx={{ mb: 3 }} />
 
                 <Stack spacing={3}>
+                  {/* Shop Code */}
+                  <TextField
+                    label="Shop Code"
+                    required
+                    fullWidth
+                    value={formData.code}
+                    onChange={(e) => handleChange("code", e.target.value)}
+                    error={!!errors.code}
+                    helperText={errors.code}
+                  />
                   {/* Shop Name */}
                   <TextField
                     label="Shop Name"
@@ -153,30 +166,22 @@ export function AddShopForm() {
                     placeholder="e.g., QuickFix Garage"
                   />
 
-                  {/* Contact Name */}
-                  <FormControl fullWidth required>
-                    <InputLabel>Contact Name</InputLabel>
-                    <Select
-                      value={formData.contactName}
-                      label="Contact Name"
-                      onChange={(e) => handleChange("contactName", e.target.value)}
-                    >
-                      {existingContacts.map((contact) => (
-                        <MenuItem key={contact} value={contact}>
-                          {contact}
-                        </MenuItem>
-                      ))}
-                      <MenuItem value="" disabled>
-                        ────────────
-                      </MenuItem>
-                      <MenuItem value="Other">Add New Contact</MenuItem>
-                    </Select>
-                    {errors.contactName && (
-                      <Typography variant="caption" color="error">
-                        {errors.contactName}
-                      </Typography>
+                  {/* Contact Name — ✅ Updated to use Autocomplete */}
+                  <Autocomplete
+                    freeSolo
+                    options={existingContacts}
+                    value={formData.contactName}
+                    onInputChange={(event, newValue) => handleChange("contactName", newValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Contact Name"
+                        required
+                        error={!!errors.contactName}
+                        helperText={errors.contactName}
+                      />
                     )}
-                  </FormControl>
+                  />
 
                   {/* Address Details */}
                   <Box display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
@@ -275,7 +280,7 @@ export function AddShopForm() {
                   size="large"
                   sx={{ flex: { xs: 1, sm: "initial" } }}
                 >
-                  Cancel
+                  Clear
                 </AppButton>
                 <AppButton
                   type="submit"
