@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Box,
@@ -25,6 +25,44 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { shopApi, Shop } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
+// --- Regex validators ---
+const regex = {
+  province: /^[A-Z]{2}$/,
+  postalCode: /^[A-Z]\d[A-Z]\d[A-Z]\d$/,
+  phone: /^\d{3}-\d{3}-\d{4}$/,
+  email: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+};
+
+// --- Field validation function ---
+const validateField = (field: keyof Shop, value: string): string => {
+  const v = value.trim();
+  switch (field) {
+    case "code":
+      if (!v) return "Required";
+      if (v.length < 2 || v.length > 10) return "Must be 2–10 characters";
+      break;
+    case "province":
+      if (!v) return "Required";
+      if (!regex.province.test(v.toUpperCase())) return "Invalid province code (e.g. AB)";
+      break;
+    case "postalCode":
+      if (!v) return "Required";
+      if (!regex.postalCode.test(v.toUpperCase())) return "Format: A1A1A1";
+      break;
+    case "phone":
+      if (!v) return "Required";
+      if (!regex.phone.test(v)) return "Format: 403-555-1234";
+      break;
+    case "email":
+      if (!v) return "Required";
+      if (!regex.email.test(v)) return "Invalid email format. Try sample@gmail.com";
+      break;
+    default:
+      if (!v) return "Required";
+  }
+  return "";
+};
+
 export default function ShopDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -34,6 +72,7 @@ export default function ShopDetailPage() {
   // Edit dialog state
   const [openEdit, setOpenEdit] = useState(false);
   const [editedShop, setEditedShop] = useState<Shop | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof Shop, string>>>({});
 
   // Fetch shop details
   useEffect(() => {
@@ -59,16 +98,35 @@ export default function ShopDetailPage() {
   const handleEditOpen = () => {
     if (!shop) return;
     setEditedShop({ ...shop });
+    // Validate all fields initially
+    const initialErrors: Partial<Record<keyof Shop, string>> = {};
+    (Object.keys(shop) as (keyof Shop)[]).forEach((field) => {
+      if (typeof shop[field] === "string") {
+        initialErrors[field] = validateField(field, shop[field] as string);
+      }
+    });
+    setErrors(initialErrors);
     setOpenEdit(true);
   };
 
   const handleEditChange = (field: keyof Shop, value: string) => {
     if (!editedShop) return;
     setEditedShop({ ...editedShop, [field]: value });
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }));
   };
 
+  const isFormValid = useMemo(() => {
+    if (!editedShop) return false;
+    return Object.entries(editedShop).every(([k, v]) => {
+      if (typeof v === "string") {
+        return validateField(k as keyof Shop, v) === "";
+      }
+      return true;
+    });
+  }, [editedShop]);
+
   const handleSave = async () => {
-    if (!editedShop) return;
+    if (!editedShop || !isFormValid) return;
     try {
       setLoading(true);
 
@@ -202,54 +260,36 @@ export default function ShopDetailPage() {
         <DialogContent sx={{ mt: 2 }}>
           {editedShop && (
             <Stack spacing={2}>
-              <TextField
-                label="Shop Name"
-                value={editedShop.shopName}
-                onChange={(e) => handleEditChange("shopName", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Contact Name"
-                value={editedShop.contactName}
-                onChange={(e) => handleEditChange("contactName", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Phone"
-                value={editedShop.phone}
-                onChange={(e) => handleEditChange("phone", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Email"
-                value={editedShop.email}
-                onChange={(e) => handleEditChange("email", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Address"
-                value={editedShop.address}
-                onChange={(e) => handleEditChange("address", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="City"
-                value={editedShop.city}
-                onChange={(e) => handleEditChange("city", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Province"
-                value={editedShop.province}
-                onChange={(e) => handleEditChange("province", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Postal Code"
-                value={editedShop.postalCode}
-                onChange={(e) => handleEditChange("postalCode", e.target.value)}
-                fullWidth
-              />
+              {(
+                [
+                  "shopName",
+                  "contactName",
+                  "phone",
+                  "email",
+                  "address",
+                  "city",
+                  "province",
+                  "postalCode",
+                ] as (keyof Shop)[]
+              ).map((field) => (
+                <TextField
+                  key={field}
+                  label={field
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase())}
+                  value={editedShop[field] || ""}
+                  onChange={(e) => handleEditChange(field, e.target.value)}
+                  fullWidth
+                  required
+                  error={!!errors[field]}
+                  helperText={errors[field]}
+                  inputProps={
+                    field === "province" || field === "postalCode"
+                      ? { style: { textTransform: "uppercase" } }
+                      : undefined
+                  }
+                />
+              ))}
               <TextField
                 select
                 label="Status"
@@ -267,7 +307,12 @@ export default function ShopDetailPage() {
           <AppButton variant="outlined" onClick={() => setOpenEdit(false)}>
             Cancel
           </AppButton>
-          <AppButton variant="contained" color="primary" onClick={handleSave}>
+          <AppButton
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={!isFormValid}
+          >
             Save Changes
           </AppButton>
         </DialogActions>
