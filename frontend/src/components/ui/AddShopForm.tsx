@@ -15,6 +15,7 @@ import {
   Stack,
   TextField,
   Typography,
+  Autocomplete, 
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
 import { shopApi, Shop } from "@/lib/api/shopApi";
@@ -50,7 +51,7 @@ export function AddShopForm() {
   const [existingContacts, setExistingContacts] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  // 🧩 Load existing contacts (optional dropdown)
+  // Load existing contacts
   useEffect(() => {
     shopApi.getShops().then((shops) => {
       const contacts = Array.from(new Set(shops.map((s) => s.contactName)));
@@ -89,8 +90,6 @@ export function AddShopForm() {
       const createdShop = await shopApi.createShop(formData);
       console.log("✅ Shop created:", createdShop);
       alert(`Shop "${createdShop.shopName}" added successfully!`);
-
-      // Reset form
       handleCancel();
     } catch (err) {
       console.error("❌ Failed to create shop:", err);
@@ -153,6 +152,7 @@ export function AddShopForm() {
                     error={!!errors.code}
                     helperText={errors.code}
                   />
+
                   {/* Shop Name */}
                   <TextField
                     label="Shop Name"
@@ -165,30 +165,27 @@ export function AddShopForm() {
                     placeholder="e.g., QuickFix Garage"
                   />
 
-                  {/* Contact Name */}
-                  <FormControl fullWidth required>
-                    <InputLabel>Contact Name</InputLabel>
-                    <Select
-                      value={formData.contactName}
-                      label="Contact Name"
-                      onChange={(e) => handleChange("contactName", e.target.value)}
-                    >
-                      {existingContacts.map((contact) => (
-                        <MenuItem key={contact} value={contact}>
-                          {contact}
-                        </MenuItem>
-                      ))}
-                      <MenuItem value="" disabled>
-                        ────────────
-                      </MenuItem>
-                      <MenuItem value="Other">Add New Contact</MenuItem>
-                    </Select>
-                    {errors.contactName && (
-                      <Typography variant="caption" color="error">
-                        {errors.contactName}
-                      </Typography>
+                  {/* Contact Name*/}
+                  <Autocomplete
+                    freeSolo
+                    options={existingContacts}
+                    value={formData.contactName}
+                    onChange={(_, newValue) =>
+                      handleChange("contactName", newValue || "")
+                    }
+                    onInputChange={(_, newInputValue) =>
+                      handleChange("contactName", newInputValue)
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Contact Name"
+                        required
+                        error={!!errors.contactName}
+                        helperText={errors.contactName}
+                      />
                     )}
-                  </FormControl>
+                  />
 
                   {/* Address Details */}
                   <Box display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
