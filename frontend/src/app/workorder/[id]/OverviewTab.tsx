@@ -143,19 +143,16 @@ export default function OverviewTab() {
                   primary={
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography fontWeight={600}>{user.name}</Typography>
-                      <Chip
-                        label={user.role}
-                        size="small"
-                        sx={{ ml: 1 }}
-                      />
+                      <Chip label={user.role} size="small" sx={{ ml: 1 }} />
                     </Box>
                   }
                   secondary={
                     <>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography component="span" variant="body2" color="text.secondary">
                         Status: {user.status}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <br />
+                      <Typography component="span" variant="body2" color="text.secondary">
                         Repair Shop: {user.repairShop}
                       </Typography>
                     </>
