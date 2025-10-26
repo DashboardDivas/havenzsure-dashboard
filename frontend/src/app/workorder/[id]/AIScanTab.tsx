@@ -8,6 +8,11 @@ import {
   ImageList,
   ImageListItem,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import DeleteIcon from "@mui/icons-material/Close";
@@ -24,6 +29,7 @@ export default function AIScanTab() {
   const MAXIMUM_IMAGES = 12;
   const [images, setImages] = useState<ImageFile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
 
@@ -63,7 +69,14 @@ export default function AIScanTab() {
       return;
     }
     setLoading(true);
-    setTimeout(() => setLoading(false), 3000);
+    setTimeout(() => {
+      setLoading(false);
+      setShowCompletionDialog(true);
+    }, 3000);
+  };
+
+  const handleCloseDialog = () => {
+    setShowCompletionDialog(false);
   };
 
   return (
@@ -199,6 +212,30 @@ export default function AIScanTab() {
           {loading ? "Cancel Detection" : "Start Detection"}
         </AppButton>
       </Box>
+
+      {/* Detection Completion Dialog */}
+      <Dialog
+        open={showCompletionDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Detection Completed
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            The AI scan has been completed successfully. You can now view the results.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} variant="contained" color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
