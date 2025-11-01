@@ -10,9 +10,11 @@ import {
   InputBase,
   Fade,
   Stack,
+  IconButton,
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close"; // <-- added
 import { useRouter } from "next/navigation";
 
 import AppTable, { Column } from "@/components/ui/Table";
@@ -102,6 +104,20 @@ export default function ShopsPage() {
     setPage(0);
   };
 
+  // Run search automatically when query or shops change so the summary reflects real results
+  React.useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, shops]);
+
+  // ❌ Clear search handler
+  const handleClearSearch = () => {
+    setQuery("");
+    setFilteredShops(shops);
+    setPage(0);
+    // immediate visual feedback is provided by state updates (re-render)
+  };
+
   // 🔄 Sorting logic
   const handleSortChange = (id: keyof Shop) => {
     const isAsc = orderBy === id && order === "asc";
@@ -187,6 +203,40 @@ export default function ShopsPage() {
             </AppButton>
           </SearchContainer>
         </Box>
+
+        {/* --- New: Search results summary + Clear button (shows when a query is active) --- */}
+        {query.trim() !== "" && (
+          <Box
+            mb={2}
+            display="flex"
+            alignItems="center"
+            gap={1}
+            sx={{
+              backgroundColor: theme.palette.action.hover,
+              borderRadius: 1,
+              p: 1,
+              border: `1px solid ${theme.palette.divider}`,
+              width: "100%",
+              maxWidth: 700,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+              Found {filteredShops.length} shop{filteredShops.length !== 1 ? "s" : ""} matching "{query}"
+            </Typography>
+            <IconButton
+              size="small"
+              aria-label="Clear search"
+              onClick={handleClearSearch}
+              sx={{
+                ml: 1,
+                borderRadius: "9999px",
+                backgroundColor: "transparent",
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
 
         {/* Table */}
         <AppTable<Shop>
