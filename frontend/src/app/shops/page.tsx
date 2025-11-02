@@ -14,6 +14,8 @@ import {
   IconButton,
   TextField,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,7 +25,7 @@ import { useRouter } from "next/navigation";
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { shopApi, Shop } from "@/lib/api/shopApi"; // ✅ UPDATED
+import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi"; // ✅ UPDATED
 import { AddShopForm } from "@/components/ui/AddShopForm";
 import ActionMenu from "@/components/ui/ActionMenu";
 
@@ -72,6 +74,11 @@ export default function ShopsPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
+  // Error notification state
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error">("error");
+
   // Validation state for add form
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -88,19 +95,36 @@ export default function ShopsPage() {
     status: "active",
   });
 
+  // Helper function to show error messages
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("error");
+    setSnackOpen(true);
+  };
+
+  // Helper function to show success messages
+  const showSuccess = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("success");
+    setSnackOpen(true);
+  };
+
   // 🧩 Fetch data from real API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      try {
-        const data = await shopApi.getShops();
-        setShops(data);
-        setFilteredShops(data);
-      } catch (err) {
-        console.error("Error fetching shops:", err);
-      } finally {
-        setLoading(false);
+      const response = await shopApi.getShops();
+
+      if (response.success && response.data) {
+        setShops(response.data);
+        setFilteredShops(response.data);
+      } else if (response.error) {
+        showError(response.error.message);
+        setShops([]);
+        setFilteredShops([]);
       }
+
+      setLoading(false);
     };
     fetchData();
   }, []);
@@ -328,18 +352,20 @@ export default function ShopsPage() {
   const handleAddShop = async () => {
     if (!isFormValid) return;
 
-    try {
-      setLoading(true);
-      const createdShop = await shopApi.createShop(newShop as Shop);
-      setShops((prev) => [...prev, createdShop]);
-      setFilteredShops((prev) => [...prev, createdShop]);
+    setLoading(true);
+    const response = await shopApi.createShop(newShop as Shop);
+
+    if (response.success && response.data) {
+      setShops((prev) => [...prev, response.data!]);
+      setFilteredShops((prev) => [...prev, response.data!]);
       setOpen(false);
-      console.log("✅ Shop created:", createdShop);
-    } catch (err) {
-      console.error("❌ Failed to create shop:", err);
-    } finally {
-      setLoading(false);
+      showSuccess(`Shop "${response.data.shopName}" created successfully!`);
+      console.log("✅ Shop created:", response.data);
+    } else if (response.error) {
+      showError(response.error.message);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -574,6 +600,22 @@ export default function ShopsPage() {
             </AppButton>
           </DialogActions>
         </Dialog>
+
+        {/* Error/Success Notification */}
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackOpen(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackOpen(false)}
+            severity={snackSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Fade>
   );

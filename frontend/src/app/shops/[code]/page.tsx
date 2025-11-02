@@ -20,9 +20,11 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { shopApi, Shop } from "@/lib/api/shopApi";
+import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {
@@ -35,9 +37,28 @@ export default function ShopDetailPage() {
   const [openEdit, setOpenEdit] = useState(false);
   const [editedShop, setEditedShop] = useState<Shop | null>(null);
 
+  // Error notification state
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error">("error");
+
   // Validation state
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
+
+  // Helper function to show error messages
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("error");
+    setSnackOpen(true);
+  };
+
+  // Helper function to show success messages
+  const showSuccess = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("success");
+    setSnackOpen(true);
+  };
 
   // Fetch shop details
   useEffect(() => {
@@ -46,11 +67,21 @@ export default function ShopDetailPage() {
 
     (async () => {
       setLoading(true);
-      const data = await shopApi.getShops();
+      const response = await shopApi.getShops();
 
       if (!mounted) return;
-      const found = data.find((s) => s.code === String(code));
-      setShop(found || null);
+
+      if (response.success && response.data) {
+        const found = response.data.find((s) => s.code === String(code));
+        setShop(found || null);
+        if (!found) {
+          showError("Shop not found. It may have been deleted or the code is incorrect.");
+        }
+      } else if (response.error) {
+        showError(response.error.message);
+        setShop(null);
+      }
+
       setLoading(false);
     })();
 
@@ -193,25 +224,28 @@ export default function ShopDetailPage() {
 
   const handleSave = async () => {
     if (!editedShop || !shop || !isFormValid) return;
-    try {
-      setLoading(true);
-      //update shop with original shop code
-      const updated = await shopApi.updateShop(shop.code, editedShop);
 
-      setShop(updated);
-      setEditedShop(updated);
+    setLoading(true);
+    // Update shop with original shop code
+    const response = await shopApi.updateShop(shop.code, editedShop);
+
+    if (response.success && response.data) {
+      setShop(response.data);
+      setEditedShop(response.data);
       setOpenEdit(false);
+      showSuccess(`Shop "${response.data.shopName}" updated successfully!`);
+      console.log("✅ Shop updated globally:", response.data);
 
-      console.log("✅ Shop updated globally:", updated);
-
-      if (updated.code !== shop.code) {
-        router.push(`/shops/${updated.code}`);
+      // If the shop code changed, redirect to the new URL
+      if (response.data.code !== shop.code) {
+        router.push(`/shops/${response.data.code}`);
       }
-    } catch (err) {
-      console.error("❌ Failed to update shop:", err);
-    } finally {
-      setLoading(false);
+    } else if (response.error) {
+      showError(response.error.message);
+      console.log("❌ Failed to update shop:", response.error);
     }
+
+    setLoading(false);
   };
 
   // Loading state
@@ -473,6 +507,22 @@ export default function ShopDetailPage() {
           </AppButton>
         </DialogActions>
       </Dialog>
+
+      {/* Error/Success Notification */}
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackOpen(false)}
+          severity={snackSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

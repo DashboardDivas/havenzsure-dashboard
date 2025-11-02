@@ -15,10 +15,12 @@ import {
   Stack,
   TextField,
   Typography,
-  Autocomplete, 
+  Autocomplete,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
-import { shopApi, Shop } from "@/lib/api/shopApi";
+import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi";
 
 interface AddShopData {
   code: string;
@@ -51,12 +53,38 @@ export function AddShopForm() {
   const [existingContacts, setExistingContacts] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Error notification state
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error">("error");
+
+  // Helper function to show error messages
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("error");
+    setSnackOpen(true);
+  };
+
+  // Helper function to show success messages
+  const showSuccess = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("success");
+    setSnackOpen(true);
+  };
+
   // Load existing contacts
   useEffect(() => {
-    shopApi.getShops().then((shops) => {
-      const contacts = Array.from(new Set(shops.map((s) => s.contactName)));
-      setExistingContacts(contacts);
-    });
+    const loadContacts = async () => {
+      const response = await shopApi.getShops();
+      if (response.success && response.data) {
+        const contacts = Array.from(new Set(response.data.map((s) => s.contactName)));
+        setExistingContacts(contacts);
+      } else if (response.error) {
+        console.log("Failed to load existing contacts:", response.error);
+        // Don't show error to user for this background operation
+      }
+    };
+    loadContacts();
   }, []);
 
   const handleChange = (field: keyof AddShopData, value: string) => {
@@ -85,18 +113,19 @@ export function AddShopForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    try {
-      setSubmitting(true);
-      const createdShop = await shopApi.createShop(formData);
-      console.log("✅ Shop created:", createdShop);
-      alert(`Shop "${createdShop.shopName}" added successfully!`);
+    setSubmitting(true);
+    const response = await shopApi.createShop(formData);
+
+    if (response.success && response.data) {
+      console.log("✅ Shop created:", response.data);
+      showSuccess(`Shop "${response.data.shopName}" added successfully!`);
       handleCancel();
-    } catch (err) {
-      console.error("❌ Failed to create shop:", err);
-      alert("Failed to create shop. Please try again.");
-    } finally {
-      setSubmitting(false);
+    } else if (response.error) {
+      console.log("❌ Failed to create shop:", response.error);
+      showError(response.error.message);
     }
+
+    setSubmitting(false);
   };
 
   const handleCancel = () => {
@@ -300,6 +329,22 @@ export function AddShopForm() {
             </Box>
           </CardContent>
         </Card>
+
+        {/* Error/Success Notification */}
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackOpen(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackOpen(false)}
+            severity={snackSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );
