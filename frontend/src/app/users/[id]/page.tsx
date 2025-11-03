@@ -75,7 +75,7 @@ export default function UserProfilePage() {
       setOpenEdit(false);
       console.log("✅ User updated globally:", updated);
     } catch (err) {
-      console.error("❌ Failed to update user:", err);
+      console.log("❌ Failed to update user:", err);
     } finally {
       setLoading(false);
     }

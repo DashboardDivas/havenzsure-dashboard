@@ -20,9 +20,11 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { shopApi, Shop } from "@/lib/api/shopApi";
+import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {
@@ -35,6 +37,29 @@ export default function ShopDetailPage() {
   const [openEdit, setOpenEdit] = useState(false);
   const [editedShop, setEditedShop] = useState<Shop | null>(null);
 
+  // Error notification state
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error">("error");
+
+  // Validation state
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Helper function to show error messages
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("error");
+    setSnackOpen(true);
+  };
+
+  // Helper function to show success messages
+  const showSuccess = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("success");
+    setSnackOpen(true);
+  };
+
   // Fetch shop details
   useEffect(() => {
     if (!code) return;
@@ -42,11 +67,21 @@ export default function ShopDetailPage() {
 
     (async () => {
       setLoading(true);
-      const data = await shopApi.getShops();
+      const response = await shopApi.getShops();
 
       if (!mounted) return;
-      const found = data.find((s) => s.code === String(code));
-      setShop(found || null);
+
+      if (response.success && response.data) {
+        const found = response.data.find((s) => s.code === String(code));
+        setShop(found || null);
+        if (!found) {
+          showError("Shop not found. It may have been deleted or the code is incorrect.");
+        }
+      } else if (response.error) {
+        showError(response.error.message);
+        setShop(null);
+      }
+
       setLoading(false);
     })();
 
@@ -55,45 +90,173 @@ export default function ShopDetailPage() {
     };
   }, [code]);
 
-  // Open edit dialog
+  // Validation function
+  const validateField = (field: keyof Shop, value: string): string => {
+    switch (field) {
+      case "code":
+        if (!value.trim()) return "Shop code is required";
+        if (value.length < 2 || value.length > 10)
+          return "Shop code must be 2-10 characters";
+        return "";
+
+      case "shopName":
+        if (!value.trim()) return "Shop name is required";
+        return "";
+
+      case "contactName":
+        if (!value.trim()) return "Contact name is required";
+        return "";
+
+      case "province":
+        if (!value.trim()) return "Province is required";
+        if (!/^[A-Z]{2}$/.test(value))
+          return "Province must be 2 uppercase letters (e.g., AB, BC, ON)";
+        return "";
+
+      case "postalCode":
+        if (!value.trim()) return "Postal code is required";
+        if (!/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(value.replace(/\s/g, "")))
+          return "Postal code must be in format A1A1A1";
+        return "";
+
+      case "phone":
+        if (!value.trim()) return "Phone is required";
+        const phoneDigits = value.replace(/\D/g, "");
+        if (phoneDigits.length !== 10)
+          return "Phone must be 10 digits (XXX-XXX-XXXX)";
+        return "";
+
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Please enter a valid email address";
+        return "";
+
+      case "address":
+        if (!value.trim()) return "Address is required";
+        return "";
+
+      case "city":
+        if (!value.trim()) return "City is required";
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  // Format phone number as user types
+  const formatPhone = (value: string): string => {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  };
+
+  // Format postal code as user types
+  const formatPostalCode = (value: string): string => {
+    const clean = value.replace(/\s/g, "").toUpperCase();
+    if (clean.length <= 3) return clean;
+    return `${clean.slice(0, 3)}${clean.slice(3, 6)}`;
+  };
+
+  // Validate all fields and update form validity
+  const validateAllFields = (shopData: Shop) => {
+    const errors: Record<string, string> = {};
+    const requiredFields: (keyof Shop)[] = [
+      "code",
+      "shopName",
+      "contactName",
+      "phone",
+      "email",
+      "address",
+      "city",
+      "province",
+      "postalCode",
+    ];
+
+    requiredFields.forEach((field) => {
+      const error = validateField(field, shopData[field] as string);
+      if (error) errors[field] = error;
+    });
+
+    setFieldErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+  };
+
+  // Enhanced edit change handler
+  const handleEditChange = (field: keyof Shop, value: string) => {
+    if (!editedShop) return;
+
+    let formattedValue = value;
+
+    // Apply formatting
+    if (field === "phone") {
+      formattedValue = formatPhone(value);
+    } else if (field === "postalCode") {
+      formattedValue = formatPostalCode(value);
+    } else if (field === "province") {
+      formattedValue = value.toUpperCase();
+    }
+
+    const updatedShop = { ...editedShop, [field]: formattedValue };
+    setEditedShop(updatedShop);
+
+    // Real-time validation
+    const error = validateField(field, formattedValue);
+    setFieldErrors((prev) => ({
+      ...prev,
+      [field]: error,
+    }));
+
+    // Check overall form validity
+    validateAllFields(updatedShop);
+  };
+
+  // Open edit dialog with validation reset
   const handleEditOpen = () => {
     if (!shop) return;
     setEditedShop({ ...shop });
+    setFieldErrors({});
+    setIsFormValid(true);
     setOpenEdit(true);
   };
 
-  const handleEditChange = (field: keyof Shop, value: string) => {
-    if (!editedShop) return;
-    setEditedShop({ ...editedShop, [field]: value });
-  };
-
   const handleSave = async () => {
-     if (!editedShop || !shop) return;
-    try {
-      setLoading(true);
-      //update shop with original shop code
-      const updated = await shopApi.updateShop(shop.code, editedShop);
+    if (!editedShop || !shop || !isFormValid) return;
 
-      setShop(updated);
-      setEditedShop(updated);
+    setLoading(true);
+    // Update shop with original shop code
+    const response = await shopApi.updateShop(shop.code, editedShop);
+
+    if (response.success && response.data) {
+      setShop(response.data);
+      setEditedShop(response.data);
       setOpenEdit(false);
+      showSuccess(`Shop "${response.data.shopName}" updated successfully!`);
+      console.log("✅ Shop updated globally:", response.data);
 
-      console.log("✅ Shop updated globally:", updated);
-
-      if (updated.code !== shop.code) {
-        router.push(`/shops/${updated.code}`);
+      // If the shop code changed, redirect to the new URL
+      if (response.data.code !== shop.code) {
+        router.push(`/shops/${response.data.code}`);
       }
-    } catch (err) {
-      console.error("❌ Failed to update shop:", err);
-    } finally {
-      setLoading(false);
+    } else if (response.error) {
+      showError(response.error.message);
+      console.log("❌ Failed to update shop:", response.error);
     }
+
+    setLoading(false);
   };
 
   // Loading state
   if (loading) {
     return (
-      <Box display="flex" alignItems="center" justifyContent="center" height="70vh">
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="70vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -125,7 +288,15 @@ export default function ShopDetailPage() {
       </Box>
 
       {/* Main Card */}
-      <Paper elevation={2} sx={{ p: 4, borderRadius: 3, maxWidth: 900, mx: "auto" }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 4,
+          borderRadius: 3,
+          maxWidth: 900,
+          mx: "auto",
+        }}
+      >
         {/* Top Row: Shop Name + Status + Actions */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -150,10 +321,14 @@ export default function ShopDetailPage() {
           </Box>
 
           <Stack direction="row" spacing={1}>
-            <AppButton variant="outlined" onClick={() => {}}>
+            <AppButton variant="outlined" onClick={() => { }}>
               Contact
             </AppButton>
-            <AppButton color="primary" variant="contained" onClick={handleEditOpen}>
+            <AppButton
+              color="primary"
+              variant="contained"
+              onClick={handleEditOpen}
+            >
               Edit Shop
             </AppButton>
           </Stack>
@@ -194,14 +369,23 @@ export default function ShopDetailPage() {
           <ListItem>
             <ListItemText
               primary="Created At"
-              secondary={shop.createdAt ? new Date(shop.createdAt).toLocaleString() : "—"}
+              secondary={
+                shop.createdAt
+                  ? new Date(shop.createdAt).toLocaleString()
+                  : "—"
+              }
             />
           </ListItem>
         </List>
       </Paper>
 
       {/* ✏️ Edit Dialog */}
-      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Edit Shop Details</DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {editedShop && (
@@ -210,55 +394,91 @@ export default function ShopDetailPage() {
                 label="Shop Code"
                 value={editedShop.code}
                 onChange={(e) => handleEditChange("code", e.target.value)}
+                error={!!fieldErrors.code}
+                helperText={fieldErrors.code}
                 fullWidth
+                required
               />
               <TextField
                 label="Shop Name"
                 value={editedShop.shopName}
                 onChange={(e) => handleEditChange("shopName", e.target.value)}
+                error={!!fieldErrors.shopName}
+                helperText={fieldErrors.shopName}
                 fullWidth
+                required
               />
               <TextField
                 label="Contact Name"
                 value={editedShop.contactName}
                 onChange={(e) => handleEditChange("contactName", e.target.value)}
+                error={!!fieldErrors.contactName}
+                helperText={fieldErrors.contactName}
                 fullWidth
+                required
               />
               <TextField
                 label="Phone"
                 value={editedShop.phone}
                 onChange={(e) => handleEditChange("phone", e.target.value)}
+                error={!!fieldErrors.phone}
+                helperText={fieldErrors.phone || "Format: XXX-XXX-XXXX"}
+                placeholder="XXX-XXX-XXXX"
                 fullWidth
+                required
               />
               <TextField
                 label="Email"
                 value={editedShop.email}
                 onChange={(e) => handleEditChange("email", e.target.value)}
+                error={!!fieldErrors.email}
+                helperText={fieldErrors.email}
+                type="email"
                 fullWidth
+                required
               />
               <TextField
                 label="Address"
                 value={editedShop.address}
                 onChange={(e) => handleEditChange("address", e.target.value)}
+                error={!!fieldErrors.address}
+                helperText={fieldErrors.address}
                 fullWidth
+                required
               />
               <TextField
                 label="City"
                 value={editedShop.city}
                 onChange={(e) => handleEditChange("city", e.target.value)}
+                error={!!fieldErrors.city}
+                helperText={fieldErrors.city}
                 fullWidth
+                required
               />
               <TextField
                 label="Province"
                 value={editedShop.province}
                 onChange={(e) => handleEditChange("province", e.target.value)}
+                error={!!fieldErrors.province}
+                helperText={
+                  fieldErrors.province ||
+                  "2 uppercase letters (e.g., AB, BC, ON)"
+                }
+                placeholder="AB"
+                inputProps={{ maxLength: 2 }}
                 fullWidth
+                required
               />
               <TextField
                 label="Postal Code"
                 value={editedShop.postalCode}
                 onChange={(e) => handleEditChange("postalCode", e.target.value)}
+                error={!!fieldErrors.postalCode}
+                helperText={fieldErrors.postalCode || "Format: A1A1A1"}
+                placeholder="A1A1A1"
+                inputProps={{ maxLength: 6 }}
                 fullWidth
+                required
               />
               <TextField
                 select
@@ -277,11 +497,32 @@ export default function ShopDetailPage() {
           <AppButton variant="outlined" onClick={() => setOpenEdit(false)}>
             Cancel
           </AppButton>
-          <AppButton variant="contained" color="primary" onClick={handleSave}>
-            Save Changes
+          <AppButton
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={!isFormValid || loading}
+          >
+            {loading ? "Saving..." : "Save Changes"}
           </AppButton>
         </DialogActions>
       </Dialog>
+
+      {/* Error/Success Notification */}
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackOpen(false)}
+          severity={snackSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

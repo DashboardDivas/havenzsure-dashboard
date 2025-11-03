@@ -94,7 +94,7 @@ export default function JobDetailPage() {
       setOpenEdit(false);
       console.log("✅ Job updated globally:", updated);
     } catch (err) {
-      console.error("❌ Failed to update job:", err);
+      console.log("❌ Failed to update job:", err);
     } finally {
       setLoading(false);
     }
