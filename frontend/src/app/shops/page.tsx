@@ -178,45 +178,10 @@ export default function ShopsPage() {
     setFilteredShops(sorted);
   };
 
-  // Navigation helper function
-  const navigateToShop = (shopCode: string) => {
-    const element = document.body;
-    element.style.transition = "opacity 0.3s ease";
-    element.style.opacity = "0.3";
-    setTimeout(() => {
-      router.push(`/shops/${shopCode}`);
-      element.style.opacity = "1";
-    }, 300);
-  };
-
   // 🧱 Table columns
   const columns: Column<Shop>[] = [
-    {
-      id: "code",
-      label: "Shop Code",
-      sortable: true,
-      render: (row) => (
-        <Box
-          onClick={() => navigateToShop(row.code)}
-          sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-        >
-          {row.code}
-        </Box>
-      )
-    },
-    {
-      id: "shopName",
-      label: "Shop Name",
-      sortable: true,
-      render: (row) => (
-        <Box
-          onClick={() => navigateToShop(row.code)}
-          sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-        >
-          {row.shopName}
-        </Box>
-      )
-    },
+    { id: "code", label: "Shop Code", sortable: true },
+    { id: "shopName", label: "Shop Name", sortable: true },
     {
       id: "status",
       label: "Status",
@@ -233,7 +198,7 @@ export default function ShopsPage() {
       label: "Actions",
       render: (row) => (
         <ActionMenu
-          id={row.code}
+          id={row.code} // ✅ Use code instead of id.replace
           type="shop"
           onArchive={(id) => console.log("Archived shop:", id)}
         />
@@ -496,6 +461,15 @@ export default function ShopsPage() {
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
           onSortChange={handleSortChange}
+          onRowClick={(row) => {
+            const element = document.body;
+            element.style.transition = "opacity 0.3s ease";
+            element.style.opacity = "0.3";
+            setTimeout(() => {
+              router.push(`/shops/${row.code}`); // ✅ Navigate by code
+              element.style.opacity = "1";
+            }, 300);
+          }}
         />
 
         {/* Add Shop Dialog with Validation */}
