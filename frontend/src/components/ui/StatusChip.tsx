@@ -45,6 +45,7 @@ export default function StatusChip({ status }: { status: StatusType }) {
       case "follow_up_required":
         return {
           label: "Follow-up Required",
+          label: "Follow Up Required",
           color: theme.palette.error.light,
         };
       case "completed":
