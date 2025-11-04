@@ -13,8 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { AppButton } from "@/components/ui/Buttons";
-import { createWorkOrder } from "@/lib/api/workorderApi"; // ✅ real API
+import { AppButton } from "@/components/ui/Buttons"; 
 
 interface WorkOrderData {
   firstName: string;
@@ -72,11 +71,12 @@ export function WorkOrderForm() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof WorkOrderData, string>>
   >({});
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (field: keyof WorkOrderData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
   const validateForm = () => {
@@ -90,8 +90,9 @@ export function WorkOrderForm() {
     if (!formData.state.trim()) newErrors.state = "Required";
     if (!formData.zip.trim()) newErrors.zip = "Required";
     if (!formData.email.trim()) newErrors.email = "Required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Invalid email";
+    }
 
     // Vehicle Info
     if (!formData.make.trim()) newErrors.make = "Required";
@@ -107,68 +108,24 @@ export function WorkOrderForm() {
       newErrors.insuranceCompany = "Required";
     if (!formData.agentFirstName.trim())
       newErrors.agentFirstName = "Required";
-    if (!formData.agentLastName.trim()) newErrors.agentLastName = "Required";
+    if (!formData.agentLastName.trim())
+      newErrors.agentLastName = "Required";
     if (!formData.agentPhoneNumber.trim())
       newErrors.agentPhoneNumber = "Required";
-    if (!formData.policyNumber.trim()) newErrors.policyNumber = "Required";
-    if (!formData.claimNumber.trim()) newErrors.claimNumber = "Required";
+    if (!formData.policyNumber.trim())
+      newErrors.policyNumber = "Required";
+    if (!formData.claimNumber.trim())
+      newErrors.claimNumber = "Required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const payload = {
-        damageDate: formData.damageDate || undefined,
-        customer: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          province: formData.state,
-          postalCode: formData.zip,
-        },
-        vehicle: {
-          vin: formData.vin,
-          plateNumber: formData.plateNumber,
-          make: formData.make,
-          model: formData.model,
-          bodyStyle: formData.bodyStyle,
-          year: parseInt(formData.year),
-          color: formData.color,
-        },
-        insurance: {
-          insuranceCompany: formData.insuranceCompany,
-          agentFirstName: formData.agentFirstName,
-          agentLastName: formData.agentLastName,
-          agentPhone: formData.agentPhoneNumber,
-          policyNumber: formData.policyNumber,
-          claimNumber: formData.claimNumber,
-        },
-        shopId: "b9d5b5ec-14d9-4ff8-9db0-8c4a2f781e61",
-        createdByUserId: "13fbd8c4-cd6a-4c4a-b4d8-b417ed14b12a",
-      };
-
-      const res = await createWorkOrder(payload);
-      console.log("✅ Work Order Created:", res.id);
-      alert(`Work order created successfully! ID: ${res.id}`);
-      handleCancel();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("❌ Error creating work order:", err.message);
-      } else {
-        console.error("❌ Error creating work order:", err);
-      }
-      alert("Failed to create work order. Please try again.");
-    } finally {
-      setLoading(false);
+    if (validateForm()) {
+      console.log("Work Order Submitted:", formData);
+      alert("Work order has been saved successfully!");
     }
   };
 
@@ -225,28 +182,21 @@ export function WorkOrderForm() {
           />
           <CardContent>
             <Box component="form" onSubmit={handleSubmit}>
-              {/* === Personal Information === */}
+              {/* Personal Information Section */}
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" color="primary" gutterBottom>
                   Personal Information
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
+
                 <Stack spacing={3}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="First Name"
                       required
                       fullWidth
                       value={formData.firstName}
-                      onChange={(e) =>
-                        handleChange("firstName", e.target.value)
-                      }
+                      onChange={(e) => handleChange("firstName", e.target.value)}
                       error={!!errors.firstName}
                       helperText={errors.firstName}
                     />
@@ -255,9 +205,7 @@ export function WorkOrderForm() {
                       required
                       fullWidth
                       value={formData.lastName}
-                      onChange={(e) =>
-                        handleChange("lastName", e.target.value)
-                      }
+                      onChange={(e) => handleChange("lastName", e.target.value)}
                       error={!!errors.lastName}
                       helperText={errors.lastName}
                     />
@@ -273,13 +221,7 @@ export function WorkOrderForm() {
                     helperText={errors.address}
                   />
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="City"
                       required
@@ -309,16 +251,11 @@ export function WorkOrderForm() {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Phone #"
                       fullWidth
+                      type="tel"
                       value={formData.phone}
                       onChange={(e) => handleChange("phone", e.target.value)}
                     />
@@ -336,20 +273,15 @@ export function WorkOrderForm() {
                 </Stack>
               </Box>
 
-              {/* === Vehicle Information === */}
+              {/* Vehicle Information */}
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" color="primary" gutterBottom>
                   Vehicle Information
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
+
                 <Stack spacing={3}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Make"
                       required
@@ -370,21 +302,13 @@ export function WorkOrderForm() {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Body Style"
                       required
                       fullWidth
                       value={formData.bodyStyle}
-                      onChange={(e) =>
-                        handleChange("bodyStyle", e.target.value)
-                      }
+                      onChange={(e) => handleChange("bodyStyle", e.target.value)}
                       error={!!errors.bodyStyle}
                       helperText={errors.bodyStyle}
                     />
@@ -399,13 +323,7 @@ export function WorkOrderForm() {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Year"
                       required
@@ -431,9 +349,7 @@ export function WorkOrderForm() {
                       fullWidth
                       InputLabelProps={{ shrink: true }}
                       value={formData.damageDate}
-                      onChange={(e) =>
-                        handleChange("damageDate", e.target.value)
-                      }
+                      onChange={(e) => handleChange("damageDate", e.target.value)}
                       error={!!errors.damageDate}
                       helperText={errors.damageDate}
                     />
@@ -443,47 +359,36 @@ export function WorkOrderForm() {
                     label="Plate Number"
                     fullWidth
                     value={formData.plateNumber}
-                    onChange={(e) =>
-                      handleChange("plateNumber", e.target.value)
-                    }
+                    onChange={(e) => handleChange("plateNumber", e.target.value)}
                   />
                 </Stack>
               </Box>
 
-              {/* === Insurance Information === */}
+              {/* Insurance Information */}
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" color="primary" gutterBottom>
                   Insurance Information
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
+
                 <Stack spacing={3}>
                   <TextField
                     label="Insurance Company"
                     required
                     fullWidth
                     value={formData.insuranceCompany}
-                    onChange={(e) =>
-                      handleChange("insuranceCompany", e.target.value)
-                    }
+                    onChange={(e) => handleChange("insuranceCompany", e.target.value)}
                     error={!!errors.insuranceCompany}
                     helperText={errors.insuranceCompany}
                   />
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Agent First Name"
                       required
                       fullWidth
                       value={formData.agentFirstName}
-                      onChange={(e) =>
-                        handleChange("agentFirstName", e.target.value)
-                      }
+                      onChange={(e) => handleChange("agentFirstName", e.target.value)}
                       error={!!errors.agentFirstName}
                       helperText={errors.agentFirstName}
                     />
@@ -492,9 +397,7 @@ export function WorkOrderForm() {
                       required
                       fullWidth
                       value={formData.agentLastName}
-                      onChange={(e) =>
-                        handleChange("agentLastName", e.target.value)
-                      }
+                      onChange={(e) => handleChange("agentLastName", e.target.value)}
                       error={!!errors.agentLastName}
                       helperText={errors.agentLastName}
                     />
@@ -505,28 +408,18 @@ export function WorkOrderForm() {
                     required
                     fullWidth
                     value={formData.agentPhoneNumber}
-                    onChange={(e) =>
-                      handleChange("agentPhoneNumber", e.target.value)
-                    }
+                    onChange={(e) => handleChange("agentPhoneNumber", e.target.value)}
                     error={!!errors.agentPhoneNumber}
                     helperText={errors.agentPhoneNumber}
                   />
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: { xs: "column", md: "row" },
-                    }}
-                  >
+                  <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
                     <TextField
                       label="Policy Number"
                       required
                       fullWidth
                       value={formData.policyNumber}
-                      onChange={(e) =>
-                        handleChange("policyNumber", e.target.value)
-                      }
+                      onChange={(e) => handleChange("policyNumber", e.target.value)}
                       error={!!errors.policyNumber}
                       helperText={errors.policyNumber}
                     />
@@ -535,9 +428,7 @@ export function WorkOrderForm() {
                       required
                       fullWidth
                       value={formData.claimNumber}
-                      onChange={(e) =>
-                        handleChange("claimNumber", e.target.value)
-                      }
+                      onChange={(e) => handleChange("claimNumber", e.target.value)}
                       error={!!errors.claimNumber}
                       helperText={errors.claimNumber}
                     />
@@ -545,7 +436,7 @@ export function WorkOrderForm() {
                 </Stack>
               </Box>
 
-              {/* === Actions === */}
+              {/* Actions */}
               <Box
                 sx={{
                   display: "flex",
@@ -559,7 +450,6 @@ export function WorkOrderForm() {
                   onClick={handleCancel}
                   size="large"
                   sx={{ flex: { xs: 1, sm: "initial" } }}
-                  disabled={loading}
                 >
                   Cancel
                 </AppButton>
@@ -568,9 +458,8 @@ export function WorkOrderForm() {
                   variant="contained"
                   size="large"
                   sx={{ flex: { xs: 1, sm: "initial" }, ml: { sm: "auto" } }}
-                  disabled={loading}
                 >
-                  {loading ? "Saving..." : "Save & Continue"}
+                  Save & Continue
                 </AppButton>
               </Box>
             </Box>
