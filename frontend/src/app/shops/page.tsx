@@ -359,7 +359,7 @@ export default function ShopsPage() {
       setShops((prev) => [...prev, response.data!]);
       setFilteredShops((prev) => [...prev, response.data!]);
       setOpen(false);
-      showSuccess(`Shop "${response.data.shopName}" created successfully!`);
+      showSuccess(`Shop created successfully!`);
       console.log("✅ Shop created:", response.data);
     } else if (response.error) {
       showError(response.error.message);

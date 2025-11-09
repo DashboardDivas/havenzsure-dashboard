@@ -233,7 +233,7 @@ export default function ShopDetailPage() {
       setShop(response.data);
       setEditedShop(response.data);
       setOpenEdit(false);
-      showSuccess(`Shop "${response.data.shopName}" updated successfully!`);
+      showSuccess(`Shop updated successfully!`);
       console.log("✅ Shop updated globally:", response.data);
 
       // If the shop code changed, redirect to the new URL
@@ -241,7 +241,7 @@ export default function ShopDetailPage() {
         router.push(`/shops/${response.data.code}`);
       }
     } else if (response.error) {
-      showError(response.error.message);
+      showError("Failed to update shop");
       console.log("❌ Failed to update shop:", response.error);
     }
 
