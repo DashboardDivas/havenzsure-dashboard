@@ -321,9 +321,9 @@ export default function ShopDetailPage() {
           </Box>
 
           <Stack direction="row" spacing={1}>
-            <AppButton variant="outlined" onClick={() => { }}>
+            {/* <AppButton variant="outlined" onClick={() => { }}>
               Contact
-            </AppButton>
+            </AppButton> */}
             <AppButton
               color="primary"
               variant="contained"
