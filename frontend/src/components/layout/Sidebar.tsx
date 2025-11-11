@@ -1,4 +1,3 @@
-// src/components/layout/Sidebar.tsx
 "use client";
 
 import React from "react";
@@ -18,11 +17,6 @@ import {
   Store,
   Work,
   HelpOutline,
-  Star,
-  Lock,
-  Archive,
-  Label,
-  Delete,
   Settings,
   History,
 } from "@mui/icons-material";
@@ -42,7 +36,7 @@ function SidebarButton({
   const theme = useTheme();
   return (
     <Button
-      component={href ? Link : "button"} // ✅ use Next.js Link if href provided
+      component={href ? Link : "button"}
       href={href}
       variant="text"
       startIcon={icon}
@@ -98,14 +92,6 @@ export default function Sidebar({
     { name: "Jobs", icon: <Work />, href: "/jobs" },
     { name: "History", icon: <History />, href: "/history" },
     { name: "Help", icon: <HelpOutline />, href: "/help" },
-  ];
-
-  const workspaceItems = [
-    { name: "Starred", icon: <Star />, href: "/starred" },
-    { name: "Recent", icon: <Lock />, href: "/recent" },
-    { name: "Archive", icon: <Archive />, href: "/archive" },
-    { name: "Tags", icon: <Label />, href: "/tags" },
-    { name: "Trash", icon: <Delete />, href: "/trash" },
   ];
 
   // Mock activity log
@@ -183,27 +169,6 @@ export default function Sidebar({
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Workspace */}
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ px: 2, mb: 1, display: "block" }}
-          >
-            Workspace
-          </Typography>
-          {workspaceItems.map((item) => (
-            <SidebarButton
-              key={item.name}
-              icon={item.icon}
-              label={item.name}
-              href={item.href}
-            />
-          ))}
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
         {/* Settings */}
         <SidebarButton icon={<Settings />} label="Settings" href="/settings" />
 
@@ -215,7 +180,7 @@ export default function Sidebar({
             Recent Activity
           </Typography>
 
-          {/* scrollable list area */}
+          {/* Scrollable list area */}
           <Box
             sx={{
               maxHeight: 200,
