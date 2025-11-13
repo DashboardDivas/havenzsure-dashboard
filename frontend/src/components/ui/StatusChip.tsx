@@ -9,14 +9,14 @@ type UserStatus = "active" | "inactive";
 type WorkOrderStatus =
   | "waiting_for_inspection"
   | "in_progress"
-  | "follow_up_required"
+  | "follow_up_needed"
   | "completed";
 type JobStatus =
   | "pending"
   | "assigned"
   | "on_hold"
   | "cancelled"
-  | "in_review"
+  | "in_progress"
   | "approved"
   | "rejected"
   | "archived";
@@ -42,10 +42,9 @@ export default function StatusChip({ status }: { status: StatusType }) {
         };
       case "in_progress":
         return { label: "In Progress", color: theme.palette.primary.main };
-      case "follow_up_required":
+      case "follow_up_needed":
         return {
-          label: "Follow-up Required",
-          label: "Follow Up Required",
+          label: "Follow Up Needed",
           color: theme.palette.error.light,
         };
       case "completed":
@@ -60,8 +59,8 @@ export default function StatusChip({ status }: { status: StatusType }) {
         return { label: "On Hold", color: theme.palette.secondary.main };
       case "cancelled":
         return { label: "Cancelled", color: theme.palette.error.main };
-      case "in_review":
-        return { label: "In Review", color: theme.palette.primary.light };
+      case "in_progress":
+        return { label: "In Progress", color: theme.palette.primary.light };
       case "approved":
         return { label: "Approved", color: theme.palette.success.main };
       case "rejected":
