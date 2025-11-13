@@ -126,6 +126,7 @@ export default function JobsPage() {
     setFilteredJobs(sorted);
   };
 
+
   const columns: Column<Job>[] = [
     { id: "id", label: "Job ID", sortable: true },
     {
