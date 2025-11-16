@@ -26,7 +26,7 @@ export type WorkOrder = {
   }>;
   customerAvatar?: string;
   repairShop?: string;
-  status: "waiting for inspection" | "in progress" | "follow-up required" | "completed";
+  status: "waiting_for_inspection" | "in_progress" | "follow_up_required" | "completed";
   dateReceived: string;
   dateUpdated: string;
 };
@@ -48,28 +48,28 @@ export interface Job {
   customer: string;
   assignedTo: string;
   repairShop: string;
-  status: "Pending" | "In Progress" | "Completed" | "Cancelled";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
   image?: string;
 }
 
 
 const jobs: Job[] = [
   {
-    id: 101,title: "Brake Replacement",customer: "John Doe",assignedTo: "Alex Smith",repairShop: "AutoFix Garage",status: "In Progress",image: "/jobs/brake.jpg", },
-  { id: 102,title: "Oil Change",customer: "Jane Roe",assignedTo: "Chris Lee",repairShop: "QuickService Auto",status: "Completed",image: "/jobs/oil.jpg", },
-  { id: 103,title: "Tire Rotation",customer: "Mike Johnson",assignedTo: "Pat Kim",repairShop: "TirePros",status: "Pending",image: "/jobs/tire.jpg", },
-  { id: 104,title: "Engine Diagnostics",customer: "Emily Davis",assignedTo: "Sam Brown",repairShop: "EngineWorks",status: "In Progress",image: "/jobs/engine.jpg", },
-  { id: 105,title: "Battery Replacement",customer: "Chris Green",assignedTo: "Taylor White",repairShop: "BatteryPlus",status: "Cancelled",image: "/jobs/battery.jpg", },  
-  { id: 106,title: "Transmission Repair",customer: "Pat Taylor",assignedTo: "Jordan Black",repairShop: "TransFix",status: "Pending",image: "/jobs/transmission.jpg", },
-  { id: 107,title: "AC Service",customer: "Alex Morgan",assignedTo: "Casey Gray",repairShop: "CoolAir Auto",status: "Completed",image: "/jobs/ac.jpg", },
-  { id: 108,title: "Wheel Alignment",customer: "Taylor Wilson",assignedTo: "Drew Scott",repairShop: "AlignRight",status: "In Progress",image: "/jobs/alignment.jpg", },
-  { id: 109,title: "Suspension Repair",customer: "Jordan Lee",assignedTo: "Morgan King",repairShop: "SmoothRide",status: "Pending",image: "/jobs/suspension.jpg", },
-  { id: 110,title: "Exhaust System Repair",customer: "Riley Brown",assignedTo: "Jamie Fox",repairShop: "ExhaustPros",status: "Completed",image: "/jobs/exhaust.jpg", },   
-  { id: 111,title: "Headlight Replacement",customer: "Casey White",assignedTo: "Avery Green",repairShop: "LightWorks",status: "In Progress",image: "/jobs/headlight.jpg", },  
-  { id: 112,title: "Windshield Repair",customer: "Drew Black",assignedTo: "Cameron Blue",repairShop: "GlassFix",status: "Cancelled",image: "/jobs/windshield.jpg", },
-  { id: 113,title: "Fuel System Cleaning",customer: "Morgan King",assignedTo: "Riley Brown",repairShop: "FuelPros",status: "Pending",image: "/jobs/fuel.jpg", },
-  { id: 114,title: "Brake Fluid Flush",customer: "Jamie Fox",assignedTo: "Jordan Lee",repairShop: "BrakeMasters",status: "Completed",image: "/jobs/brake_fluid.jpg", },
-  { id: 115,title: "Cooling System Service",customer: "Alex Taylor",assignedTo: "Jamie Green",repairShop: "CoolTech",status: "In Progress",image: "/jobs/cooling.jpg", }
+    id: 101,title: "Brake Replacement",customer: "John Doe",assignedTo: "Alex Smith",repairShop: "AutoFix Garage",status: "in_progress",image: "/jobs/brake.jpg", },
+  { id: 102,title: "Oil Change",customer: "Jane Roe",assignedTo: "Chris Lee",repairShop: "QuickService Auto",status: "completed",image: "/jobs/oil.jpg", },
+  { id: 103,title: "Tire Rotation",customer: "Mike Johnson",assignedTo: "Pat Kim",repairShop: "TirePros",status: "pending",image: "/jobs/tire.jpg", },
+  { id: 104,title: "Engine Diagnostics",customer: "Emily Davis",assignedTo: "Sam Brown",repairShop: "EngineWorks",status: "in_progress",image: "/jobs/engine.jpg", },
+  { id: 105,title: "Battery Replacement",customer: "Chris Green",assignedTo: "Taylor White",repairShop: "BatteryPlus",status: "cancelled",image: "/jobs/battery.jpg", },
+  { id: 106,title: "Transmission Repair",customer: "Pat Taylor",assignedTo: "Jordan Black",repairShop: "TransFix",status: "pending",image: "/jobs/transmission.jpg", },
+  { id: 107,title: "AC Service",customer: "Alex Morgan",assignedTo: "Casey Gray",repairShop: "CoolAir Auto",status: "completed",image: "/jobs/ac.jpg", },
+  { id: 108,title: "Wheel Alignment",customer: "Taylor Wilson",assignedTo: "Drew Scott",repairShop: "AlignRight",status: "in_progress",image: "/jobs/alignment.jpg", },
+  { id: 109,title: "Suspension Repair",customer: "Jordan Lee",assignedTo: "Morgan King",repairShop: "SmoothRide",status: "pending",image: "/jobs/suspension.jpg", },
+  { id: 110,title: "Exhaust System Repair",customer: "Riley Brown",assignedTo: "Jamie Fox",repairShop: "ExhaustPros",status: "completed",image: "/jobs/exhaust.jpg", },
+  { id: 111,title: "Headlight Replacement",customer: "Casey White",assignedTo: "Avery Green",repairShop: "LightWorks",status: "in_progress",image: "/jobs/headlight.jpg", },
+  { id: 112,title: "Windshield Repair",customer: "Drew Black",assignedTo: "Cameron Blue",repairShop: "GlassFix",status: "cancelled",image: "/jobs/windshield.jpg", },
+  { id: 113,title: "Fuel System Cleaning",customer: "Morgan King",assignedTo: "Riley Brown",repairShop: "FuelPros",status: "pending",image: "/jobs/fuel.jpg", },
+  { id: 114,title: "Brake Fluid Flush",customer: "Jamie Fox",assignedTo: "Jordan Lee",repairShop: "BrakeMasters",status: "completed",image: "/jobs/brake_fluid.jpg", },
+  { id: 115,title: "Cooling System Service",customer: "Alex Taylor",assignedTo: "Jamie Green",repairShop: "CoolTech",status: "in_progress",image: "/jobs/cooling.jpg", }
 ];
 
 
@@ -125,26 +125,26 @@ const users: User[] = [
 ];
 
 const workOrders: WorkOrder[] = [
-  { id: "Wo-001", customer: "Alice Johnson", email: "alice@example.com", status: "waiting for inspection", dateReceived: "13 September 2025", dateUpdated: "21 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=1", phone: "123-456-7890", address: "123 Main St, Anytown, USA", plate: "ABC123", make: "Toyota", model: "Camry", dents: [{ location: "Front Bumper", severity: "Minor", estimate: 250 }] },
+  { id: "Wo-001", customer: "Alice Johnson", email: "alice@example.com", status: "waiting_for_inspection", dateReceived: "13 September 2025", dateUpdated: "21 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=1", phone: "123-456-7890", address: "123 Main St, Anytown, USA", plate: "ABC123", make: "Toyota", model: "Camry", dents: [{ location: "Front Bumper", severity: "Minor", estimate: 250 }] },
   { id: "Wo-002", customer: "Bob Smith", email: "bob@example.com", status: "completed", dateReceived: "4 October 2025", dateUpdated: "19 October 2025", customerAvatar: "https://i.pravatar.cc/40?img=2", phone: "234-567-8901", address: "234 Elm St, Othertown, USA", plate: "DEF456", make: "Honda", model: "Civic", dents: [{ location: "Rear Bumper", severity: "Major", estimate: 500 }] },
-  { id: "Wo-003", customer: "Charlie Brown", email: "charlie@example.com", status: "in progress", dateReceived: "3 October 2025", dateUpdated: "16 October 2025", customerAvatar: "https://i.pravatar.cc/40?img=3", phone: "345-678-9012", address: "345 Oak St, Sometown, USA", plate: "GHI789", make: "Ford", model: "Focus", dents: [{ location: "Left Door", severity: "Minor", estimate: 300 }] },
-  { id: "Wo-004", customer: "Dana White", email: "dana@example.com", status: "follow-up required", dateReceived: "3 October 2025", dateUpdated: "15 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=4", phone: "456-789-0123", address: "456 Pine St, Anycity, USA", plate: "JKL012", make: "Chevrolet", model: "Malibu", dents: [] },
+  { id: "Wo-003", customer: "Charlie Brown", email: "charlie@example.com", status: "in_progress", dateReceived: "3 October 2025", dateUpdated: "16 October 2025", customerAvatar: "https://i.pravatar.cc/40?img=3", phone: "345-678-9012", address: "345 Oak St, Sometown, USA", plate: "GHI789", make: "Ford", model: "Focus", dents: [{ location: "Left Door", severity: "Minor", estimate: 300 }] },
+  { id: "Wo-004", customer: "Dana White", email: "dana@example.com", status: "follow_up_required", dateReceived: "3 October 2025", dateUpdated: "15 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=4", phone: "456-789-0123", address: "456 Pine St, Anycity, USA", plate: "JKL012", make: "Chevrolet", model: "Malibu", dents: [] },
   { id: "Wo-005", customer: "Eve Adams", email: "eve@example.com", status: "completed", dateReceived: "29 September 2025", dateUpdated: "14 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=5", phone: "567-890-1234", address: "567 Maple St, Anystate, USA", plate: "MNO345", make: "Nissan", model: "Altima", dents: [] },
-  { id: "Wo-006", customer: "Frank Moore", email: "frank@example.com", status: "follow-up required", dateReceived: "12 September 2025", dateUpdated: "13 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=6", phone: "678-901-2345", address: "678 Cedar St, Anyplace, USA", plate: "PQR678", make: "Hyundai", model: "Elantra", dents: [] },
-  { id: "Wo-007", customer: "Grace Lee", email: "grace@example.com", status: "waiting for inspection", dateReceived: "11 September 2025", dateUpdated: "12 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=7", phone: "789-012-3456", address: "789 Birch St, Anycity, USA", plate: "STU901", make: "Kia", model: "Soul", dents: [] },
+  { id: "Wo-006", customer: "Frank Moore", email: "frank@example.com", status: "follow_up_required", dateReceived: "12 September 2025", dateUpdated: "13 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=6", phone: "678-901-2345", address: "678 Cedar St, Anyplace, USA", plate: "PQR678", make: "Hyundai", model: "Elantra", dents: [] },
+  { id: "Wo-007", customer: "Grace Lee", email: "grace@example.com", status: "waiting_for_inspection", dateReceived: "11 September 2025", dateUpdated: "12 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=7", phone: "789-012-3456", address: "789 Birch St, Anycity, USA", plate: "STU901", make: "Kia", model: "Soul", dents: [] },
   { id: "Wo-008", customer: "Hank Miller", email: "hank@example.com", status: "completed", dateReceived: "10 September 2025", dateUpdated: "11 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=8", phone: "890-123-4567", address: "890 Spruce St, Anyburg, USA", plate: "VWX234", make: "Mazda", model: "CX-5", dents: [] },
-  { id: "Wo-009", customer: "Ivy Wilson", email: "ivy@example.com", status: "in progress", dateReceived: "9 September 2025", dateUpdated: "10 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=9", phone: "901-234-5678", address: "901 Fir St, Anyville, USA", plate: "YZA567", make: "Subaru", model: "Outback", dents: [] },
-  { id: "Wo-010", customer: "Jack Taylor", email: "jack@example.com", status: "waiting for inspection", dateReceived: "8 September 2025", dateUpdated: "9 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=10", phone: "012-345-6789", address: "012 Willow St, Anycity, USA", plate: "BCD890", make: "Volkswagen", model: "Jetta", dents: [] },
+  { id: "Wo-009", customer: "Ivy Wilson", email: "ivy@example.com", status: "in_progress", dateReceived: "9 September 2025", dateUpdated: "10 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=9", phone: "901-234-5678", address: "901 Fir St, Anyville, USA", plate: "YZA567", make: "Subaru", model: "Outback", dents: [] },
+  { id: "Wo-010", customer: "Jack Taylor", email: "jack@example.com", status: "waiting_for_inspection", dateReceived: "8 September 2025", dateUpdated: "9 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=10", phone: "012-345-6789", address: "012 Willow St, Anycity, USA", plate: "BCD890", make: "Volkswagen", model: "Jetta", dents: [] },
   { id: "Wo-011", customer: "Karen Thomas", email: "karen@example.com", status: "completed", dateReceived: "7 September 2025", dateUpdated: "8 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=11", phone: "123-456-7890", address: "123 Main St, Anytown, USA", plate: "EFG123", make: "Chevrolet", model: "Malibu", dents: [] },
-  { id: "Wo-012", customer: "Liam Scott", email: "liam@example.com", status: "follow-up required", dateReceived: "6 September 2025", dateUpdated: "7 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=12", phone: "234-567-8901", address: "234 Elm St, Othertown, USA", plate: "HIJ456", make: "Ford", model: "Fusion", dents: [] },
-  { id: "Wo-013", customer: "Mia Harris", email: "mia@example.com", status: "waiting for inspection", dateReceived: "5 September 2025", dateUpdated: "6 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=13", phone: "345-678-9012", address: "345 Oak St, Sometown, USA", plate: "JKL012", make: "Chevrolet", model: "Malibu", dents: [] },
-  { id: "Wo-014", customer: "Noah Brooks", email: "noah@example.com", status: "in progress", dateReceived: "4 September 2025", dateUpdated: "5 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=14" , phone: "456-789-0123", address: "456 Pine St, Anycity, USA", plate: "MNO345", make: "Nissan", model: "Altima", dents: [] },
+  { id: "Wo-012", customer: "Liam Scott", email: "liam@example.com", status: "follow_up_required", dateReceived: "6 September 2025", dateUpdated: "7 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=12", phone: "234-567-8901", address: "234 Elm St, Othertown, USA", plate: "HIJ456", make: "Ford", model: "Fusion", dents: [] },
+  { id: "Wo-013", customer: "Mia Harris", email: "mia@example.com", status: "waiting_for_inspection", dateReceived: "5 September 2025", dateUpdated: "6 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=13", phone: "345-678-9012", address: "345 Oak St, Sometown, USA", plate: "JKL012", make: "Chevrolet", model: "Malibu", dents: [] },
+  { id: "Wo-014", customer: "Noah Brooks", email: "noah@example.com", status: "in_progress", dateReceived: "4 September 2025", dateUpdated: "5 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=14" , phone: "456-789-0123", address: "456 Pine St, Anycity, USA", plate: "MNO345", make: "Nissan", model: "Altima", dents: [] },
   { id: "Wo-015", customer: "Olivia Davis", email: "olivia@example.com", status: "completed", dateReceived: "3 September 2025", dateUpdated: "4 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=15", phone: "567-890-1234", address: "567 Maple St, Anystate, USA", plate: "PQR678", make: "Hyundai", model: "Elantra", dents: [] },
-  { id: "Wo-016", customer: "Paul Wright", email: "paul@example.com", status: "waiting for inspection", dateReceived: "2 September 2025", dateUpdated: "3 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=16", phone: "678-901-2345", address: "678 Cedar St, Anyplace, USA", plate: "STU901", make: "Kia", model: "Soul", dents: [] },
-  { id: "Wo-017", customer: "Quinn Foster", email: "quinn@example.com", status: "in progress", dateReceived: "1 September 2025", dateUpdated: "2 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=17", phone: "789-012-3456", address: "789 Birch St, Anycity, USA", plate: "VWX234", make: "Mazda", model: "CX-5", dents: [] },
-  { id: "Wo-018", customer: "Rachel Green", email: "rachel@example.com", status: "follow-up required", dateReceived: "31 August 2025", dateUpdated: "1 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=18", phone: "890-123-4567", address: "890 Spruce St, Anyburg, USA", plate: "YZA567", make: "Subaru", model: "Outback", dents: [] },
+  { id: "Wo-016", customer: "Paul Wright", email: "paul@example.com", status: "waiting_for_inspection", dateReceived: "2 September 2025", dateUpdated: "3 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=16", phone: "678-901-2345", address: "678 Cedar St, Anyplace, USA", plate: "STU901", make: "Kia", model: "Soul", dents: [] },
+  { id: "Wo-017", customer: "Quinn Foster", email: "quinn@example.com", status: "in_progress", dateReceived: "1 September 2025", dateUpdated: "2 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=17", phone: "789-012-3456", address: "789 Birch St, Anycity, USA", plate: "VWX234", make: "Mazda", model: "CX-5", dents: [] },
+  { id: "Wo-018", customer: "Rachel Green", email: "rachel@example.com", status: "follow_up_required", dateReceived: "31 August 2025", dateUpdated: "1 September 2025", customerAvatar: "https://i.pravatar.cc/40?img=18", phone: "890-123-4567", address: "890 Spruce St, Anyburg, USA", plate: "YZA567", make: "Subaru", model: "Outback", dents: [] },
   { id: "Wo-019", customer: "Sam Parker", email: "sam@example.com", status: "completed", dateReceived: "30 August 2025", dateUpdated: "31 August 2025", customerAvatar: "https://i.pravatar.cc/40?img=19", phone: "901-234-5678", address: "901 Fir St, Anyville, USA", plate: "BCD890", make: "Volkswagen", model: "Jetta", dents: [] },
-  { id: "Wo-020", customer: "Tina Lopez", email: "tina@example.com", status: "waiting for inspection", dateReceived: "29 August 2025", dateUpdated: "30 August 2025", customerAvatar: "https://i.pravatar.cc/40?img=20", phone: "012-345-6789", address: "012 Willow St, Anycity, USA", plate: "EFG123", make: "Chevrolet", model: "Malibu", dents: [] },
+  { id: "Wo-020", customer: "Tina Lopez", email: "tina@example.com", status: "waiting_for_inspection", dateReceived: "29 August 2025", dateUpdated: "30 August 2025", customerAvatar: "https://i.pravatar.cc/40?img=20", phone: "012-345-6789", address: "012 Willow St, Anycity, USA", plate: "EFG123", make: "Chevrolet", model: "Malibu", dents: [] },
 ];
 
 const shops: Shop[] = [

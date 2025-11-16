@@ -7,16 +7,16 @@ import { useTheme } from "@mui/material/styles";
 // Separate types
 type UserStatus = "active" | "inactive";
 type WorkOrderStatus =
-  | "waiting for inspection"
-  | "in progress"
-  | "follow-up required"
+  | "waiting_for_inspection"
+  | "in_progress"
+  | "follow_up_needed"
   | "completed";
 type JobStatus =
   | "pending"
   | "assigned"
-  | "on hold"
+  | "on_hold"
   | "cancelled"
-  | "in review"
+  | "in_progress"
   | "approved"
   | "rejected"
   | "archived";
@@ -35,16 +35,16 @@ export default function StatusChip({ status }: { status: StatusType }) {
         return { label: "Inactive", color: theme.palette.error.main };
 
       // 🔹 Work order statuses
-      case "waiting for inspection":
+      case "waiting_for_inspection":
         return {
           label: "Waiting for Inspection",
           color: theme.palette.warning.light,
         };
-      case "in progress":
+      case "in_progress":
         return { label: "In Progress", color: theme.palette.primary.main };
-      case "follow-up required":
+      case "follow_up_needed":
         return {
-          label: "Follow-up Required",
+          label: "Follow Up Needed",
           color: theme.palette.error.light,
         };
       case "completed":
@@ -55,12 +55,12 @@ export default function StatusChip({ status }: { status: StatusType }) {
         return { label: "Pending", color: theme.palette.warning.main };
       case "assigned":
         return { label: "Assigned", color: theme.palette.info.main };
-      case "on hold":
+      case "on_hold":
         return { label: "On Hold", color: theme.palette.secondary.main };
       case "cancelled":
         return { label: "Cancelled", color: theme.palette.error.main };
-      case "in review":
-        return { label: "In Review", color: theme.palette.primary.light };
+      case "in_progress":
+        return { label: "In Progress", color: theme.palette.primary.light };
       case "approved":
         return { label: "Approved", color: theme.palette.success.main };
       case "rejected":

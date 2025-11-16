@@ -220,10 +220,8 @@ export default function AIScanTab() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          <Typography variant="h6" fontWeight={600}>
-            Detection Completed
-          </Typography>
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Detection Completed
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1">
