@@ -37,6 +37,11 @@ export default function ShopDetailPage() {
   const [openEdit, setOpenEdit] = useState(false);
   const [editedShop, setEditedShop] = useState<Shop | null>(null);
 
+  // Code change confirmation state
+  const [showCodeConfirm, setShowCodeConfirm] = useState(false);
+  const [originalCode, setOriginalCode] = useState<string>("");
+  const [pendingCodeChange, setPendingCodeChange] = useState<string>("");
+
   // Error notification state
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
@@ -196,6 +201,13 @@ export default function ShopDetailPage() {
   const handleEditChange = (field: keyof Shop, value: string) => {
     if (!editedShop) return;
 
+    // Special handling for code changes
+    if (field === "code" && value !== originalCode && value !== editedShop.code) {
+      setPendingCodeChange(value);
+      setShowCodeConfirm(true);
+      return;
+    }
+
     let formattedValue = value;
 
     // Apply formatting
@@ -227,10 +239,34 @@ export default function ShopDetailPage() {
     validateAllFields(updatedShop);
   };
 
+  // Handle code change confirmation
+  const handleCodeChangeConfirm = () => {
+    if (!editedShop) return;
+    
+    const updatedShop = { ...editedShop, code: pendingCodeChange };
+    setEditedShop(updatedShop);
+    
+    // Mark field as touched and validate
+    setTouchedFields((prev) => ({ ...prev, code: true }));
+    const error = validateField("code", pendingCodeChange);
+    setFieldErrors((prev) => ({ ...prev, code: error }));
+    validateAllFields(updatedShop);
+    
+    setShowCodeConfirm(false);
+    setPendingCodeChange("");
+  };
+
+  // Handle code change cancel
+  const handleCodeChangeCancel = () => {
+    setShowCodeConfirm(false);
+    setPendingCodeChange("");
+  };
+
   // Open edit dialog with validation reset
   const handleEditOpen = () => {
     if (!shop) return;
     setEditedShop({ ...shop });
+    setOriginalCode(shop.code); // Store original code
     setFieldErrors({});
     setTouchedFields({});
     setIsFormValid(true);
@@ -283,7 +319,20 @@ export default function ShopDetailPage() {
         router.push(`/shops/${response.data.code}`);
       }
     } else if (response.error) {
-      showError("Failed to update shop");
+      // Handle 409 conflict specifically
+      if (response.error.message?.includes('409') || 
+          response.error.message?.toLowerCase().includes('already exists') ||
+          response.error.message?.toLowerCase().includes('duplicate')) {
+        showError(`Shop code '${editedShop.code}' already exists. Please use a different code.`);
+        
+        // Revert code to original and keep dialog open
+        const revertedShop = { ...editedShop, code: originalCode };
+        setEditedShop(revertedShop);
+        setFieldErrors((prev) => ({ ...prev, code: "" }));
+        validateAllFields(revertedShop);
+      } else {
+        showError("Failed to update shop");
+      }
       console.log("❌ Failed to update shop:", response.error);
     }
 
@@ -546,6 +595,41 @@ export default function ShopDetailPage() {
             disabled={loading}
           >
             {loading ? "Saving..." : "Save Changes"}
+          </AppButton>
+        </DialogActions>
+      </Dialog>
+
+      {/* Code Change Confirmation Dialog */}
+      <Dialog
+        open={showCodeConfirm}
+        onClose={handleCodeChangeCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Confirm Shop Code Change</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" gutterBottom>
+            You are about to change the shop code:
+          </Typography>
+          <Box sx={{ my: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              From: <strong>{originalCode}</strong> → To: <strong>{pendingCodeChange}</strong>
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="warning.main">
+            ⚠️ This will change the shop's code and its record URL.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ pr: 3, pb: 2 }}>
+          <AppButton variant="outlined" onClick={handleCodeChangeCancel}>
+            Cancel
+          </AppButton>
+          <AppButton
+            variant="contained"
+            color="primary"
+            onClick={handleCodeChangeConfirm}
+          >
+            Confirm Change
           </AppButton>
         </DialogActions>
       </Dialog>
