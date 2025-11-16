@@ -77,10 +77,11 @@ export default function ShopsPage() {
   // Error notification state
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
-  const [snackSeverity, setSnackSeverity] = useState<"success" | "error">("error");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "warning">("error");
 
   // Validation state for add form
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [newShop, setNewShop] = useState<Partial<Shop>>({
     code: "",
@@ -106,6 +107,13 @@ export default function ShopsPage() {
   const showSuccess = (message: string) => {
     setSnackMessage(message);
     setSnackSeverity("success");
+    setSnackOpen(true);
+  };
+
+  // Helper function to show warning messages
+  const showWarning = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("warning");
     setSnackOpen(true);
   };
 
@@ -298,8 +306,8 @@ export default function ShopsPage() {
       if (error) errors[field] = error;
     });
 
-    setFieldErrors(errors);
     setIsFormValid(Object.keys(errors).length === 0);
+    return errors;
   };
 
   // Handle field changes with validation
@@ -318,14 +326,20 @@ export default function ShopsPage() {
     const updatedShop = { ...newShop, [field]: formattedValue };
     setNewShop(updatedShop);
 
-    // Real-time validation
+    // Mark field as touched
+    setTouchedFields((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+
+    // Real-time validation only for the current field
     const error = validateField(field, formattedValue);
     setFieldErrors((prev) => ({
       ...prev,
       [field]: error,
     }));
 
-    // Check overall form validity
+    // Check overall form validity but don't update field errors for untouched fields
     validateAllFields(updatedShop);
   };
 
@@ -344,13 +358,39 @@ export default function ShopsPage() {
       status: "active",
     });
     setFieldErrors({});
+    setTouchedFields({});
     setIsFormValid(false);
     setOpen(true);
   };
 
   // Handle form submission
   const handleAddShop = async () => {
-    if (!isFormValid) return;
+    // Validate all fields and show errors for submission
+    const allErrors = validateAllFields(newShop);
+    setFieldErrors(allErrors);
+
+    if (Object.keys(allErrors).length > 0) {
+      // Mark all required fields as touched so errors show
+      const requiredFields: (keyof Shop)[] = [
+        "code",
+        "shopName",
+        "contactName",
+        "phone",
+        "email",
+        "address",
+        "city",
+        "province",
+        "postalCode",
+      ];
+
+      const allTouched = requiredFields.reduce((acc, field) => ({
+        ...acc,
+        [field]: true
+      }), {});
+
+      setTouchedFields(allTouched);
+      return;
+    }
 
     setLoading(true);
     const response = await shopApi.createShop(newShop as Shop);
@@ -486,8 +526,8 @@ export default function ShopsPage() {
                 label="Shop Code"
                 value={newShop.code || ""}
                 onChange={(e) => handleNewShopChange("code", e.target.value)}
-                error={!!fieldErrors.code}
-                helperText={fieldErrors.code}
+                error={!!(touchedFields.code && fieldErrors.code)}
+                helperText={touchedFields.code ? fieldErrors.code : ""}
                 fullWidth
                 required
               />
@@ -495,8 +535,8 @@ export default function ShopsPage() {
                 label="Shop Name"
                 value={newShop.shopName || ""}
                 onChange={(e) => handleNewShopChange("shopName", e.target.value)}
-                error={!!fieldErrors.shopName}
-                helperText={fieldErrors.shopName}
+                error={!!(touchedFields.shopName && fieldErrors.shopName)}
+                helperText={touchedFields.shopName ? fieldErrors.shopName : ""}
                 fullWidth
                 required
               />
@@ -506,8 +546,8 @@ export default function ShopsPage() {
                 onChange={(e) =>
                   handleNewShopChange("contactName", e.target.value)
                 }
-                error={!!fieldErrors.contactName}
-                helperText={fieldErrors.contactName}
+                error={!!(touchedFields.contactName && fieldErrors.contactName)}
+                helperText={touchedFields.contactName ? fieldErrors.contactName : ""}
                 fullWidth
                 required
               />
@@ -515,8 +555,8 @@ export default function ShopsPage() {
                 label="Phone"
                 value={newShop.phone || ""}
                 onChange={(e) => handleNewShopChange("phone", e.target.value)}
-                error={!!fieldErrors.phone}
-                helperText={fieldErrors.phone || "Format: XXX-XXX-XXXX"}
+                error={!!(touchedFields.phone && fieldErrors.phone)}
+                helperText={touchedFields.phone ? fieldErrors.phone : "Format: XXX-XXX-XXXX"}
                 placeholder="XXX-XXX-XXXX"
                 fullWidth
                 required
@@ -525,8 +565,8 @@ export default function ShopsPage() {
                 label="Email"
                 value={newShop.email || ""}
                 onChange={(e) => handleNewShopChange("email", e.target.value)}
-                error={!!fieldErrors.email}
-                helperText={fieldErrors.email}
+                error={!!(touchedFields.email && fieldErrors.email)}
+                helperText={touchedFields.email ? fieldErrors.email : ""}
                 type="email"
                 fullWidth
                 required
@@ -535,8 +575,8 @@ export default function ShopsPage() {
                 label="Address"
                 value={newShop.address || ""}
                 onChange={(e) => handleNewShopChange("address", e.target.value)}
-                error={!!fieldErrors.address}
-                helperText={fieldErrors.address}
+                error={!!(touchedFields.address && fieldErrors.address)}
+                helperText={touchedFields.address ? fieldErrors.address : ""}
                 fullWidth
                 required
               />
@@ -544,8 +584,8 @@ export default function ShopsPage() {
                 label="City"
                 value={newShop.city || ""}
                 onChange={(e) => handleNewShopChange("city", e.target.value)}
-                error={!!fieldErrors.city}
-                helperText={fieldErrors.city}
+                error={!!(touchedFields.city && fieldErrors.city)}
+                helperText={touchedFields.city ? fieldErrors.city : ""}
                 fullWidth
                 required
               />
@@ -553,10 +593,10 @@ export default function ShopsPage() {
                 label="Province"
                 value={newShop.province || ""}
                 onChange={(e) => handleNewShopChange("province", e.target.value)}
-                error={!!fieldErrors.province}
+                error={!!(touchedFields.province && fieldErrors.province)}
                 helperText={
-                  fieldErrors.province ||
-                  "2 uppercase letters (e.g., AB, BC, ON)"
+                  touchedFields.province ? fieldErrors.province :
+                    "2 uppercase letters (e.g., AB, BC, ON)"
                 }
                 placeholder="AB"
                 inputProps={{ maxLength: 2 }}
@@ -567,8 +607,8 @@ export default function ShopsPage() {
                 label="Postal Code"
                 value={newShop.postalCode || ""}
                 onChange={(e) => handleNewShopChange("postalCode", e.target.value)}
-                error={!!fieldErrors.postalCode}
-                helperText={fieldErrors.postalCode || "Format: A1A1A1"}
+                error={!!(touchedFields.postalCode && fieldErrors.postalCode)}
+                helperText={touchedFields.postalCode ? fieldErrors.postalCode : "Format: A1A1A1"}
                 placeholder="A1A1A1"
                 inputProps={{ maxLength: 6 }}
                 fullWidth
@@ -604,7 +644,7 @@ export default function ShopsPage() {
         {/* Error/Success Notification */}
         <Snackbar
           open={snackOpen}
-          autoHideDuration={4000}
+          autoHideDuration={3000}
           onClose={() => setSnackOpen(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
