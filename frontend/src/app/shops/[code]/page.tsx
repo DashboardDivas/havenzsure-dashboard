@@ -242,16 +242,16 @@ export default function ShopDetailPage() {
   // Handle code change confirmation
   const handleCodeChangeConfirm = () => {
     if (!editedShop) return;
-    
+
     const updatedShop = { ...editedShop, code: pendingCodeChange };
     setEditedShop(updatedShop);
-    
+
     // Mark field as touched and validate
     setTouchedFields((prev) => ({ ...prev, code: true }));
     const error = validateField("code", pendingCodeChange);
     setFieldErrors((prev) => ({ ...prev, code: error }));
     validateAllFields(updatedShop);
-    
+
     setShowCodeConfirm(false);
     setPendingCodeChange("");
   };
@@ -320,11 +320,11 @@ export default function ShopDetailPage() {
       }
     } else if (response.error) {
       // Handle 409 conflict specifically
-      if (response.error.message?.includes('409') || 
-          response.error.message?.toLowerCase().includes('already exists') ||
-          response.error.message?.toLowerCase().includes('duplicate')) {
+      if (response.error.message?.includes('409') ||
+        response.error.message?.toLowerCase().includes('already exists') ||
+        response.error.message?.toLowerCase().includes('duplicate')) {
         showError(`Shop code '${editedShop.code}' already exists. Please use a different code.`);
-        
+
         // Revert code to original and keep dialog open
         const revertedShop = { ...editedShop, code: originalCode };
         setEditedShop(revertedShop);
