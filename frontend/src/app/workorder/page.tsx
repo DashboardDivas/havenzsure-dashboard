@@ -14,16 +14,14 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import ActionMenu from "@/components/ui/ActionMenu";
-
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { WorkOrder, getWorkOrders } from "@/lib/api/workorderApi";
+import { WorkOrderListItem, getWorkOrders } from "@/lib/api/workorderApi";
 import type { StatusType } from "@/components/ui/StatusChip";
 
 import { useTheme } from "@mui/material/styles";
-import { useRouter } from "next/navigation"; // ✅ added router
+import { useRouter } from "next/navigation";
 
 // Status icons
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -32,19 +30,33 @@ import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import ReplayCircleFilledIcon from "@mui/icons-material/ReplayCircleFilled";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
+// ---- keep logic: consistent date formatting ----
+const fmt = new Intl.DateTimeFormat(undefined, {
+  month: "short",      // "Nov"
+  day: "2-digit",      // "04"
+  year: "numeric",     // "2025"
+  hour: "2-digit",     // "11"
+  minute: "2-digit",   // "30"
+  hour12: true,        // AM+PM format
+});
+const formatDate = (s?: string) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? s : fmt.format(d);
+};
+
 export default function WorkOrdersPage() {
   const theme = useTheme();
-  const router = useRouter(); // ✅ initialize router
+  const router = useRouter();
 
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<WorkOrder[]>([]);
+  // ---- keep logic/state from uploaded file ----
+  const [workOrders, setWorkOrders] = useState<WorkOrderListItem[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<WorkOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [orderBy, setOrderBy] = useState<keyof WorkOrder | undefined>(
-    "work_order_id" as keyof WorkOrder
-  );
+  const [orderBy, setOrderBy] = useState<keyof WorkOrderListItem | undefined>("code");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [open, setOpen] = useState(false);
@@ -52,7 +64,7 @@ export default function WorkOrdersPage() {
 
   useEffect(() => {
     setLoading(true);
-    getWorkOrders() // ✅ replaced fakeApi.getWorkOrders() with real API
+    getWorkOrders()
       .then((data) => {
         setWorkOrders(data);
         setFilteredOrders(data);
@@ -64,10 +76,7 @@ export default function WorkOrdersPage() {
       });
   }, []);
 
-  const handleFilterChange = (
-    _: React.MouseEvent<HTMLElement>,
-    newFilter: string
-  ) => {
+  const handleFilterChange = (_: React.MouseEvent<HTMLElement>, newFilter: string) => {
     if (newFilter !== null) {
       setStatusFilter(newFilter);
       if (newFilter === "all") {
@@ -79,59 +88,81 @@ export default function WorkOrdersPage() {
     }
   };
 
-  const columns: Column<WorkOrder & { id: string | number }>[] = [
-    { id: "work_order_id", label: "Work Order ID", sortable: true },
+  // ---- UI from copy-paste, but map to our logic fields ----
+  const columns: Column<WorkOrderListItem & { id: string | number }>[] = [
+    // copy-paste UI: first column shows "Work Order ID"
+    // logic mapping: use row.code as the displayable ID
+    { id: "code", label: "Work Order ID", sortable: true },
     {
       id: "status",
       label: "Status",
       sortable: true,
       render: (row) => <StatusChip status={row.status as StatusType} />,
     },
-    { id: "date_received", label: "Date Received", sortable: true },
-    { id: "date_updated", label: "Date Updated", sortable: true },
     {
-      id: "customer",
+      id: "createdAt",
+      label: "Date Received",
+      sortable: true,
+      render: (row) => formatDate(row.createdAt),
+    },
+    {
+      id: "updatedAt",
+      label: "Date Updated",
+      sortable: true,
+      render: (row) => formatDate(row.updatedAt),
+    },
+    {
+      id: "customerFullName",
       label: "Customer Name",
       sortable: true,
       render: (row) => (
         <Box display="flex" alignItems="center" gap={1}>
-          <Avatar alt={row.customer.full_name} />
-          <Typography variant="body2">{row.customer.full_name}</Typography>
+          <Avatar alt={row.customerFullName ?? ""} />
+          <Typography variant="body2">{row.customerFullName ?? "Unknown Customer"}</Typography>
         </Box>
       ),
     },
     {
-      id: "email",
+      id: "customerEmail",
       label: "Email",
       sortable: true,
-      render: (row) => row.customer.email,
+      render: (row) => row.customerEmail ?? "—",
     },
   ];
 
-  const handleSortChange = (id: "id" | keyof WorkOrder) => {
-    const key: keyof WorkOrder =
-      id === "id" ? ("work_order_id" as keyof WorkOrder) : id;
-    const isAsc = orderBy === key && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(key);
+  // keep the uploaded file's sort logic semantics
+  const handleSortChange = (id: keyof WorkOrderListItem) => {
+    const isAsc = orderBy === id && order === "asc";
+    const direction = isAsc ? "desc" : "asc";
+    setOrder(direction);
+    setOrderBy(id);
 
     const sorted = [...filteredOrders].sort((a, b) => {
-      const valA = a[key];
-      const valB = b[key];
-      if (valA === undefined && valB === undefined) return 0;
-      if (valA === undefined) return 1;
-      if (valB === undefined) return -1;
-      if (typeof valA === "string" && typeof valB === "string") {
-        return valA.localeCompare(valB) * (isAsc ? 1 : -1);
+      const A = a[id] as any;
+      const B = b[id] as any;
+
+      // date-safe compare when fields are createdAt/updatedAt
+      if (id === "createdAt" || id === "updatedAt") {
+        const aTime = A ? new Date(A).getTime() : 0;
+        const bTime = B ? new Date(B).getTime() : 0;
+        return (aTime - bTime) * (isAsc ? 1 : -1);
       }
-      return (valA < valB ? -1 : 1) * (isAsc ? 1 : -1);
+
+      if (A == null && B == null) return 0;
+      if (A == null) return 1;
+      if (B == null) return -1;
+
+      if (typeof A === "string" && typeof B === "string") {
+        return A.localeCompare(B) * (isAsc ? 1 : -1);
+      }
+      return (A < B ? -1 : 1) * (isAsc ? 1 : -1);
     });
     setFilteredOrders(sorted);
   };
 
   return (
     <Box p={3}>
-      {/* Header */}
+      {/* Header (copy-paste UI) */}
       <Grid container alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h5" fontWeight={600}>
           Work Order Management
@@ -141,7 +172,7 @@ export default function WorkOrdersPage() {
         </AppButton>
       </Grid>
 
-      {/* Filter Bar */}
+      {/* Filter Bar (copy-paste UI) */}
       <Box
         mb={3}
         sx={{
@@ -157,8 +188,8 @@ export default function WorkOrdersPage() {
               ? "0 4px 12px rgba(0,0,0,0.08)"
               : "0 4px 16px rgba(0,0,0,0.4)",
           border: `1px solid ${theme.palette.mode === "light"
-              ? "rgba(0,0,0,0.08)"
-              : "rgba(255,255,255,0.1)"
+            ? "rgba(0,0,0,0.08)"
+            : "rgba(255,255,255,0.1)"
             }`,
         }}
       >
@@ -230,12 +261,12 @@ export default function WorkOrdersPage() {
         </ToggleButtonGroup>
       </Box>
 
-      {/* Table */}
-      <AppTable<WorkOrder & { id: string | number }>
+      {/* Table (copy-paste UI with our data mapping) */}
+      <AppTable<WorkOrderListItem & { id: string | number }>
         columns={columns}
         data={filteredOrders
           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-          .map((row) => ({ ...row, id: row.work_order_id }))}
+          .map((row) => ({ ...row, id: (row as any).id ?? row.code }))}
         loading={loading}
         total={filteredOrders.length}
         page={page}
@@ -245,16 +276,11 @@ export default function WorkOrdersPage() {
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onSortChange={handleSortChange}
-        onRowClick={(row) => router.push(`/workorder/${row.work_order_id}`)}
+        onRowClick={(row) => router.push(`/workorder/${row.code}`)}
       />
 
-      {/* Add Work Order Dialog */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
+      {/* Add Work Order Dialog (copy-paste UI) */}
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add New Work Order</DialogTitle>
         <DialogContent>
           <WorkOrderForm />

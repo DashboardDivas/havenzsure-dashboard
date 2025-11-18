@@ -27,9 +27,9 @@ export type WorkOrder = {
   customerAvatar?: string;
   repairShop?: string;
   status:
-    | "waiting for inspection"
-    | "in progress"
-    | "follow-up required"
+    | "waiting_for_inspection"
+    | "in_progress"
+    | "follow_up_required"
     | "completed";
   dateReceived: string;
   dateUpdated: string;
@@ -52,7 +52,7 @@ export interface Job {
   customer: string;
   assignedTo: string;
   repairShop: string;
-  status: "pending" | "in progress" | "completed" | "cancelled";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
   image?: string;
 }
 
@@ -63,7 +63,7 @@ const jobs: Job[] = [
     customer: "John Doe",
     assignedTo: "Alex Smith",
     repairShop: "AutoFix Garage",
-    status: "in progress",
+    status: "in_progress",
     image: "/jobs/brake.jpg",
   },
   {
@@ -90,7 +90,7 @@ const jobs: Job[] = [
     customer: "Emily Davis",
     assignedTo: "Sam Brown",
     repairShop: "EngineWorks",
-    status: "in progress",
+    status: "in_progress",
     image: "/jobs/engine.jpg",
   },
   {
@@ -126,7 +126,7 @@ const jobs: Job[] = [
     customer: "Taylor Wilson",
     assignedTo: "Drew Scott",
     repairShop: "AlignRight",
-    status: "in progress",
+    status: "in_progress",
     image: "/jobs/alignment.jpg",
   },
   {
@@ -135,7 +135,7 @@ const jobs: Job[] = [
     customer: "Jordan Lee",
     assignedTo: "Morgan King",
     repairShop: "SmoothRide",
-    status: "Pending",
+    status: "pending",
     image: "/jobs/suspension.jpg",
   },
   {
@@ -144,7 +144,7 @@ const jobs: Job[] = [
     customer: "Riley Brown",
     assignedTo: "Jamie Fox",
     repairShop: "ExhaustPros",
-    status: "Completed",
+    status: "completed",
     image: "/jobs/exhaust.jpg",
   },
   {
@@ -153,7 +153,7 @@ const jobs: Job[] = [
     customer: "Casey White",
     assignedTo: "Avery Green",
     repairShop: "LightWorks",
-    status: "In Progress",
+    status: "in_progress",
     image: "/jobs/headlight.jpg",
   },
   {
@@ -162,7 +162,7 @@ const jobs: Job[] = [
     customer: "Drew Black",
     assignedTo: "Cameron Blue",
     repairShop: "GlassFix",
-    status: "Cancelled",
+    status: "cancelled",
     image: "/jobs/windshield.jpg",
   },
   {
@@ -171,7 +171,7 @@ const jobs: Job[] = [
     customer: "Morgan King",
     assignedTo: "Riley Brown",
     repairShop: "FuelPros",
-    status: "Pending",
+    status: "pending",
     image: "/jobs/fuel.jpg",
   },
   {
@@ -180,7 +180,7 @@ const jobs: Job[] = [
     customer: "Jamie Fox",
     assignedTo: "Jordan Lee",
     repairShop: "BrakeMasters",
-    status: "Completed",
+    status: "completed",
     image: "/jobs/brake_fluid.jpg",
   },
   {
@@ -189,7 +189,7 @@ const jobs: Job[] = [
     customer: "Alex Taylor",
     assignedTo: "Jamie Green",
     repairShop: "CoolTech",
-    status: "In Progress",
+    status: "in_progress",
     image: "/jobs/cooling.jpg",
   },
 ];
@@ -410,7 +410,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-001",
     customer: "Alice Johnson",
     email: "alice@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "13 September 2025",
     dateUpdated: "21 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=1",
@@ -440,7 +440,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-003",
     customer: "Charlie Brown",
     email: "charlie@example.com",
-    status: "in progress",
+    status: "in_progress",
     dateReceived: "3 October 2025",
     dateUpdated: "16 October 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=3",
@@ -455,7 +455,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-004",
     customer: "Dana White",
     email: "dana@example.com",
-    status: "follow-up required",
+    status: "follow_up_required",
     dateReceived: "3 October 2025",
     dateUpdated: "15 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=4",
@@ -485,7 +485,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-006",
     customer: "Frank Moore",
     email: "frank@example.com",
-    status: "follow-up required",
+    status: "follow_up_required",
     dateReceived: "12 September 2025",
     dateUpdated: "13 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=6",
@@ -500,7 +500,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-007",
     customer: "Grace Lee",
     email: "grace@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "11 September 2025",
     dateUpdated: "12 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=7",
@@ -530,7 +530,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-009",
     customer: "Ivy Wilson",
     email: "ivy@example.com",
-    status: "in progress",
+    status: "in_progress",
     dateReceived: "9 September 2025",
     dateUpdated: "10 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=9",
@@ -545,7 +545,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-010",
     customer: "Jack Taylor",
     email: "jack@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "8 September 2025",
     dateUpdated: "9 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=10",
@@ -575,7 +575,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-012",
     customer: "Liam Scott",
     email: "liam@example.com",
-    status: "follow-up required",
+    status: "follow_up_required",
     dateReceived: "6 September 2025",
     dateUpdated: "7 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=12",
@@ -590,7 +590,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-013",
     customer: "Mia Harris",
     email: "mia@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "5 September 2025",
     dateUpdated: "6 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=13",
@@ -605,7 +605,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-014",
     customer: "Noah Brooks",
     email: "noah@example.com",
-    status: "in progress",
+    status: "in_progress",
     dateReceived: "4 September 2025",
     dateUpdated: "5 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=14",
@@ -635,7 +635,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-016",
     customer: "Paul Wright",
     email: "paul@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "2 September 2025",
     dateUpdated: "3 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=16",
@@ -650,7 +650,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-017",
     customer: "Quinn Foster",
     email: "quinn@example.com",
-    status: "in progress",
+    status: "in_progress",
     dateReceived: "1 September 2025",
     dateUpdated: "2 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=17",
@@ -665,7 +665,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-018",
     customer: "Rachel Green",
     email: "rachel@example.com",
-    status: "follow-up required",
+    status: "follow_up_required",
     dateReceived: "31 August 2025",
     dateUpdated: "1 September 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=18",
@@ -695,7 +695,7 @@ const workOrders: WorkOrder[] = [
     id: "Wo-020",
     customer: "Tina Lopez",
     email: "tina@example.com",
-    status: "waiting for inspection",
+    status: "waiting_for_inspection",
     dateReceived: "29 August 2025",
     dateUpdated: "30 August 2025",
     customerAvatar: "https://i.pravatar.cc/40?img=20",
