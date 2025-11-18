@@ -19,7 +19,7 @@ import ActionMenu from "@/components/ui/ActionMenu";
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import { WorkOrder, getWorkOrders } from "@/lib/api/workorderApi"; 
+import { WorkOrder, getWorkOrders } from "@/lib/api/workorderApi";
 import type { StatusType } from "@/components/ui/StatusChip";
 
 import { useTheme } from "@mui/material/styles";
@@ -106,17 +106,6 @@ export default function WorkOrdersPage() {
       sortable: true,
       render: (row) => row.customer.email,
     },
-    {
-      id: "actions",
-      label: "Actions",
-      render: (row) => (
-        <ActionMenu
-          id={row.work_order_id.replace("WO-", "")}
-          type="workorder"
-          onArchive={(id) => console.log("Archived work order:", id)}
-        />
-      ),
-    },
   ];
 
   const handleSortChange = (id: "id" | keyof WorkOrder) => {
@@ -167,11 +156,10 @@ export default function WorkOrdersPage() {
             theme.palette.mode === "light"
               ? "0 4px 12px rgba(0,0,0,0.08)"
               : "0 4px 16px rgba(0,0,0,0.4)",
-          border: `1px solid ${
-            theme.palette.mode === "light"
+          border: `1px solid ${theme.palette.mode === "light"
               ? "rgba(0,0,0,0.08)"
               : "rgba(255,255,255,0.1)"
-          }`,
+            }`,
         }}
       >
         <ToggleButtonGroup

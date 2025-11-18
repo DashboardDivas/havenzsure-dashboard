@@ -16,6 +16,8 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  Select,
+  FormControl,
 } from "@mui/material";
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -27,7 +29,6 @@ import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
 import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi"; // ✅ UPDATED
 import { AddShopForm } from "@/components/ui/AddShopForm";
-import ActionMenu from "@/components/ui/ActionMenu";
 
 // 🔍 Styled components
 const SearchContainer = styled("div")(({ theme }) => ({
@@ -186,6 +187,29 @@ export default function ShopsPage() {
     setFilteredShops(sorted);
   };
 
+  // Handle status change
+  const handleStatusChange = async (id: string | number, newStatus: "active" | "inactive") => {
+    const shopCode = String(id); // Convert to string since shop codes are strings
+    const response = await shopApi.updateShop(shopCode, { status: newStatus });
+
+    if (response.success && response.data) {
+      // Update local state
+      setShops((prev) =>
+        prev.map(shop =>
+          shop.code === shopCode ? { ...shop, status: newStatus } : shop
+        )
+      );
+      setFilteredShops((prev) =>
+        prev.map(shop =>
+          shop.code === shopCode ? { ...shop, status: newStatus } : shop
+        )
+      );
+      showSuccess(`Shop status updated to ${newStatus}`);
+    } else if (response.error) {
+      showError(response.error.message);
+    }
+  };
+
   // 🧱 Table columns
   const columns: Column<Shop>[] = [
     { id: "code", label: "Shop Code", sortable: true },
@@ -205,11 +229,22 @@ export default function ShopsPage() {
       id: "actions",
       label: "Actions",
       render: (row) => (
-        <ActionMenu
-          id={row.code} // ✅ Use code instead of id.replace
-          type="shop"
-          onArchive={(id) => console.log("Archived shop:", id)}
-        />
+        <FormControl size="small" sx={{ minWidth: 100 }}>
+          <Select
+            value={row.status}
+            onChange={(e) => handleStatusChange(row.code, e.target.value as "active" | "inactive")}
+            variant="outlined"
+            sx={{
+              fontSize: "0.875rem",
+              "& .MuiSelect-select": {
+                py: 0.5,
+              },
+            }}
+          >
+            <MenuItem value="active">Active</MenuItem>
+            <MenuItem value="inactive">Inactive</MenuItem>
+          </Select>
+        </FormControl>
       ),
     },
   ];
