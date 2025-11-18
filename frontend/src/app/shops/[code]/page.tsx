@@ -24,6 +24,7 @@ import {
   Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseIcon from "@mui/icons-material/Close";
 import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
@@ -477,7 +478,18 @@ export default function ShopDetailPage() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Edit Shop Details</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 1 }}>
+          Edit Shop Details
+          <IconButton
+            aria-label="close"
+            onClick={() => setOpenEdit(false)}
+            sx={{
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {editedShop && (
             <Stack spacing={2} mt={5}>
@@ -650,5 +662,7 @@ export default function ShopDetailPage() {
         </Alert>
       </Snackbar>
     </Box>
+
+
   );
 }
