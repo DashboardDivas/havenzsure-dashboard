@@ -188,9 +188,28 @@ export default function ShopsPage() {
   };
 
   // Handle status change
-  const handleStatusChange = async (id: string | number, newStatus: "active" | "inactive") => {
+  const handleStatusChange = async (id: string | number, newStatus: "active" | "inactive", event?: React.SyntheticEvent) => {
+    // Stop event propagation to prevent row click
+    if (event) {
+      event.stopPropagation();
+    }
+
     const shopCode = String(id); // Convert to string since shop codes are strings
-    const response = await shopApi.updateShop(shopCode, { status: newStatus });
+
+    // Find the current shop object
+    const currentShop = shops.find(shop => shop.code === shopCode);
+    if (!currentShop) {
+      showError("Shop not found");
+      return;
+    }
+
+    // Create complete updated shop object
+    const updatedShop = {
+      ...currentShop,
+      status: newStatus
+    };
+
+    const response = await shopApi.updateShop(shopCode, updatedShop);
 
     if (response.success && response.data) {
       // Update local state
@@ -229,10 +248,11 @@ export default function ShopsPage() {
       id: "actions",
       label: "Actions",
       render: (row) => (
-        <FormControl size="small" sx={{ minWidth: 100 }}>
+        <FormControl size="small" sx={{ minWidth: 100 }} onClick={(e) => e.stopPropagation()}>
           <Select
             value={row.status}
-            onChange={(e) => handleStatusChange(row.code, e.target.value as "active" | "inactive")}
+            onChange={(e) => handleStatusChange(row.code, e.target.value as "active" | "inactive", e)}
+            onClick={(e) => e.stopPropagation()}
             variant="outlined"
             sx={{
               fontSize: "0.875rem",
@@ -241,8 +261,8 @@ export default function ShopsPage() {
               },
             }}
           >
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
+            <MenuItem value="active" onClick={(e) => e.stopPropagation()}>Active</MenuItem>
+            <MenuItem value="inactive" onClick={(e) => e.stopPropagation()}>Inactive</MenuItem>
           </Select>
         </FormControl>
       ),
