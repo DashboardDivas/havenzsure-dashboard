@@ -69,7 +69,7 @@ export default function JobsPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  
+
   useEffect(() => {
     setLoading(true);
 
@@ -91,7 +91,7 @@ export default function JobsPage() {
     }
   }, []);
 
- 
+
   const handleSearch = () => {
     if (!query.trim()) {
       setFilteredJobs(jobs);
@@ -109,7 +109,7 @@ export default function JobsPage() {
     setPage(0);
   };
 
-  
+
   const handleSortChange = (id: keyof Job) => {
     const isAsc = orderBy === id && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -149,17 +149,6 @@ export default function JobsPage() {
       sortable: true,
       render: (row) => <StatusChip status={row.status} />,
     },
-    {
-      id: "actions",
-      label: "Actions",
-      render: (row) => (
-        <ActionMenu
-          id={row.id.toString()}
-          type="job"
-          onArchive={(id) => console.log("Archived job:", id)}
-        />
-      ),
-    },
   ];
 
   return (
@@ -180,7 +169,7 @@ export default function JobsPage() {
           </AppButton>
         </Stack>
 
-        
+
         <Box mb={2} display="flex" justifyContent="flex-start">
           <SearchContainer>
             <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1 }} />
@@ -230,7 +219,7 @@ export default function JobsPage() {
           }}
         />
 
-        
+
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle>Add New Job</DialogTitle>
           <DialogContent>

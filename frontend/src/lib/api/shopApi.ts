@@ -55,7 +55,7 @@ const getErrorMessage = (
     case "INVALID_INPUT":
       return "Invalid input data. Please check your entries and try again.";
     case "CONFLICT":
-      return "A shop with this code already exists. Please use a different shop code.";
+      return "Shop code already exists";
     case "NOT_FOUND":
       return "Shop not found. It may have been deleted or the code is incorrect.";
     case "SERVER_ERROR":

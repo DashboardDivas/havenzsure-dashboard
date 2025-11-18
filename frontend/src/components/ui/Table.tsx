@@ -17,7 +17,6 @@ import {
   alpha,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import ActionMenu from "@/components/ui/ActionMenu";
 
 export type Column<T> = {
   id: keyof T | string; // Allow both keys of T and custom strings like "actions"
@@ -136,13 +135,7 @@ export default function AppTable<T extends { id: number | string }>({
                 >
                   {columns.map((col) => (
                     <TableCell key={String(col.id)}>
-                      {col.id === "actions" ? (
-                        <ActionMenu
-                          onView={() => console.log("View", row.id)}
-                          onEdit={() => console.log("Edit", row.id)}
-                          onArchive={() => console.log("Archive", row.id)}
-                        />
-                      ) : col.render ? (
+                      {col.render ? (
                         col.render(row)
                       ) : (
                         String(row[col.id as keyof T]) // Default rendering

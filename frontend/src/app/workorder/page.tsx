@@ -14,8 +14,6 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import ActionMenu from "@/components/ui/ActionMenu";
-
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
@@ -130,17 +128,6 @@ export default function WorkOrdersPage() {
       sortable: true,
       render: (row) => row.customerEmail ?? "—",
     },
-    {
-      id: "actions",
-      label: "Actions",
-      render: (row) => (
-        <ActionMenu
-          id={(row.code ?? "").replace(/^WO-/, "")}
-          type="workorder"
-          onArchive={(id) => console.log("Archived work order:", id)}
-        />
-      ),
-    },
   ];
 
   // keep the uploaded file's sort logic semantics
@@ -200,11 +187,10 @@ export default function WorkOrdersPage() {
             theme.palette.mode === "light"
               ? "0 4px 12px rgba(0,0,0,0.08)"
               : "0 4px 16px rgba(0,0,0,0.4)",
-          border: `1px solid ${
-            theme.palette.mode === "light"
-              ? "rgba(0,0,0,0.08)"
-              : "rgba(255,255,255,0.1)"
-          }`,
+          border: `1px solid ${theme.palette.mode === "light"
+            ? "rgba(0,0,0,0.08)"
+            : "rgba(255,255,255,0.1)"
+            }`,
         }}
       >
         <ToggleButtonGroup

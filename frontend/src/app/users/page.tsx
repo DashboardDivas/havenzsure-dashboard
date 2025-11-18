@@ -19,7 +19,6 @@ import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
 import { fakeApi, User } from "@/lib/fakeApi";
-import ActionMenu from "@/components/ui/ActionMenu";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -83,17 +82,6 @@ export default function UsersPage() {
       sortable: true,
       render: (row) => <StatusChip status={row.status} />,
     },
-    {
-  id: "actions",
-  label: "Actions",
-  render: (row) => (
-    <ActionMenu
-      id={row.id}
-      type="user"
-      onArchive={(id) => console.log("Archived user:", id)}
-    />
-  ),
-},
   ];
 
   return (
