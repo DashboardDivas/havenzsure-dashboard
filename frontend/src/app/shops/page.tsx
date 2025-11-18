@@ -398,6 +398,25 @@ export default function ShopsPage() {
     setOpen(true);
   };
 
+  // Clear form function
+  const handleClearForm = () => {
+    setNewShop({
+      code: "",
+      shopName: "",
+      contactName: "",
+      phone: "",
+      email: "",
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      status: "active",
+    });
+    setFieldErrors({});
+    setTouchedFields({});
+    setIsFormValid(false);
+  };
+
   // Handle form submission
   const handleAddShop = async () => {
     // Validate all fields and show errors for submission
@@ -662,6 +681,9 @@ export default function ShopsPage() {
             </Stack>
           </DialogContent>
           <DialogActions sx={{ pr: 3, pb: 2 }}>
+            <AppButton variant="outlined" onClick={handleClearForm} sx={{ mr: "auto" }}>
+              Clear
+            </AppButton>
             <AppButton variant="outlined" onClick={() => setOpen(false)}>
               Cancel
             </AppButton>
