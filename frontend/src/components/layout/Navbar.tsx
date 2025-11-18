@@ -15,17 +15,15 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ThemeMenuButton from "@/components/theme/ThemeMenuButton";
 import SearchBar from "@/components/ui/SearchBar";
-import UserProfile from "./UserProfile"; // ✅ your drawer component
+import UserProfile from "./UserProfile";
+import NotificationPanel from "@/components/ui/NotificationPanel";
 
-export default function Navbar({
-  onMenuClick,
-}: {
-  onMenuClick?: () => void;
-}) {
+export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const theme = useTheme();
   const [filter, setFilter] = useState<"workOrder" | "customer">("workOrder");
   const [query, setQuery] = useState("");
-  const [profileOpen, setProfileOpen] = useState(false); // ✅ control drawer
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const handleSearch = () => {
     console.log(
@@ -72,13 +70,21 @@ export default function Navbar({
           {/* Right: Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <ThemeMenuButton />
-            <IconButton>
+
+            {/* 🔔 Notifications */}
+            <IconButton onClick={() => setNotificationsOpen(true)}>
               <Badge badgeContent={3} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
 
-            {/* ✅ Avatar opens UserProfile */}
+            {/* Notification Panel */}
+            <NotificationPanel
+              open={notificationsOpen}
+              onClose={() => setNotificationsOpen(false)}
+            />
+
+            {/* Avatar → Profile */}
             <IconButton onClick={() => setProfileOpen(true)}>
               <Avatar
                 alt="User Avatar"
@@ -97,7 +103,7 @@ export default function Navbar({
         </Toolbar>
       </AppBar>
 
-      {/* ✅ User Profile Drawer */}
+      {/* Profile Drawer */}
       <UserProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
   );
