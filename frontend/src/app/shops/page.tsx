@@ -573,7 +573,18 @@ export default function ShopsPage() {
           fullWidth
           maxWidth="sm"
         >
-          <DialogTitle>Add New Shop</DialogTitle>
+          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 1 }}>
+            Add New Shop
+            <IconButton
+              aria-label="close"
+              onClick={() => setOpen(false)}
+              sx={{
+                color: theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
             <Stack spacing={2} mt={1}>
               <TextField
