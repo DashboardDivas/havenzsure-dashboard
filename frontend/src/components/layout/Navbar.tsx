@@ -17,15 +17,25 @@ import ThemeMenuButton from "@/components/theme/ThemeMenuButton";
 import SearchBar from "@/components/ui/SearchBar";
 import UserProfile from "./UserProfile";
 import NotificationPanel from "@/components/ui/NotificationPanel";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const theme = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [filter, setFilter] = useState<"workOrder" | "customer">("workOrder");
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  // Sync search bar state with URL parameters
+  React.useEffect(() => {
+    const q = searchParams.get("q");
+    const f = searchParams.get("filter");
+    if (q) setQuery(q);
+    if (f === "workOrder" || f === "customer") setFilter(f);
+  }, [searchParams]);
 
   const handleSearch = () => {
     if (query.trim()) {
