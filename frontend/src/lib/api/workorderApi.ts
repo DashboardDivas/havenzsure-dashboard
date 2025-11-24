@@ -1,7 +1,25 @@
 //workorderApi.ts —— frontend-only adapter (no backend changes)
+import { getAuth } from "firebase/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") || "http://localhost:8080";
+
+// Get auth headers with fresh token
+const getAuthHeaders = async (): Promise<HeadersInit> => {
+  if (typeof window === "undefined") return {};
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) return {};
+
+  // Get fresh ID token from Firebase
+  const token = await user.getIdToken();
+  if (!token) return {};
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 // ========== Normalized types for UI ==========
 export interface WorkOrderListItem {
@@ -29,14 +47,46 @@ export interface WorkOrderDetail extends WorkOrderListItem {
   // ...add optional fields here safely
 }
 
+// work order intake form dtos
+export interface CustomerIntake { 
+  firstName: string; 
+  lastName: string; 
+  address: string; 
+  city: string; 
+  postalCode: string; 
+  province: string; 
+  email: string; 
+  phone: string; 
+} 
+ 
+export interface InsuranceIntake { 
+  insuranceCompany: string; 
+  agentFirstName: string; 
+  agentLastName: string; 
+  agentPhone: string; 
+  policyNumber: string;
+  claimNumber: string; 
+}
+ 
+export interface VehicleIntake { 
+  plateNo: string; 
+  make: string; 
+  model: string;
+  bodyStyle: string;
+  modelYear: number;
+  vin: string;
+  color: string;
+}
+ 
+export interface IntakePayload {
+  customer: CustomerIntake;
+  vehicle: VehicleIntake;
+  insurance: InsuranceIntake | null; 
+}
 // ========== Helpers ==========
 
 function safeStr(x: unknown): string | undefined {
   return typeof x === "string" ? x : undefined;
-
-
-
-
 }
 
 function coalesce<T>(...vals: T[]): T | undefined {
@@ -88,7 +138,7 @@ function normalizeListRow(row: any): WorkOrderListItem {
     coalesce(safeStr(row.full_name), safeStr(cust.full_name), safeStr(cust.fullName))
   );
 
-    const customerFullName = coalesce(
+  const customerFullName = coalesce(
     safeStr(row.customerFullName),
     nameFromParts
   );
@@ -156,8 +206,6 @@ function normalizeDetailRow(row: any): WorkOrderDetail {
     customerPhone,
     customerAddress,
   };
-
-
 }
 
 // ========== API Calls (front-end only; backend unchanged) ==========
@@ -167,9 +215,14 @@ function normalizeDetailRow(row: any): WorkOrderDetail {
  * Backend endpoint (unchanged): GET /workorders
  */
 export async function getWorkOrders(): Promise<WorkOrderListItem[]> {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(await getAuthHeaders()),
+  };
+
   const res = await fetch(`${API_BASE}/workorders`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers,
     cache: "no-store",
   });
 
@@ -191,9 +244,14 @@ export async function getWorkOrders(): Promise<WorkOrderListItem[]> {
  * Backend endpoint (unchanged): GET /workorders/{code}
  */
 export async function getWorkOrderByCode(codeOrId: string): Promise<WorkOrderDetail> {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(await getAuthHeaders()),
+  };
+
   const res = await fetch(`${API_BASE}/workorders/${encodeURIComponent(codeOrId)}`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers,
     cache: "no-store",
   });
 
@@ -208,12 +266,28 @@ export async function getWorkOrderByCode(codeOrId: string): Promise<WorkOrderDet
   return normalizeDetailRow(row);
 }
 
-/**
- * Create is intentionally disabled for now (backend flow is multi-step: customer -> vehicle -> workorder).
- * Keep a hard error to avoid silent mismatches.
- */
-export async function createWorkOrder(): Promise<never> {
-  throw new Error(
-    "createWorkOrder is disabled in frontend adapter because backend requires multi-step creation (customer -> vehicle -> workorder). Implement when backend aggregator is ready, or split into steps on the frontend."
-  );
+export async function createWorkOrder(
+  payload: IntakePayload
+): Promise<WorkOrderDetail> {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(await getAuthHeaders()),
+  };
+
+  const res = await fetch(`${API_BASE}/workorders`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`POST /workorders failed: ${res.status} ${text}`);
+  }
+
+  const data = await res.json();
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error("Empty response after creating work order.");
+  return normalizeDetailRow(row);
 }
+

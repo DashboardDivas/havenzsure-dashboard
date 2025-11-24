@@ -9,27 +9,40 @@ import {
   Typography,
   Container,
   Stack,
-  Paper,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { ArrowForward } from "@mui/icons-material";
 import { AppButton } from "@/components/ui/Buttons";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HavenzsureLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const router = useRouter();
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt", { email, password, remember });
+    setError("");
 
-    // ✅ Simulate successful login
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 500);
+    if (password.length < 6) {
+    setError("Password must be at least 6 characters.");
+    return;
+    }
+
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      // AuthContext will handle redirect to /dashboard
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,32 +66,12 @@ export default function HavenzsureLoginPage() {
           </Typography>
         </Box>
 
-        {/* Demo Credentials */}
-        <Paper
-          sx={{
-            backgroundColor: "rgba(124, 58, 237, 0.05)",
-            border: "1px solid rgba(124, 58, 237, 0.2)",
-            borderRadius: 2,
-            p: 2,
-            mb: 3,
-          }}
-        >
-          <Typography variant="body2" textAlign="center">
-            <Box component="span" color="text.secondary">
-              Email:
-            </Box>{" "}
-            <Box component="span" color="primary.main">
-              admin@havenzsure.com
-            </Box>{" "}
-            /{" "}
-            <Box component="span" color="text.secondary">
-              Pass:
-            </Box>{" "}
-            <Box component="span" color="primary.main">
-              admin
-            </Box>
-          </Typography>
-        </Paper>
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+            {error}
+          </Alert>
+        )}
 
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
@@ -94,6 +87,8 @@ export default function HavenzsureLoginPage() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "action.hover",
@@ -115,6 +110,8 @@ export default function HavenzsureLoginPage() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "action.hover",
@@ -138,6 +135,7 @@ export default function HavenzsureLoginPage() {
                   <Checkbox
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
+                    disabled={loading}
                     sx={{
                       color: "primary.main",
                       "&.Mui-checked": {
@@ -155,12 +153,17 @@ export default function HavenzsureLoginPage() {
               type="submit"
               fullWidth
               variant="contained"
-              endIcon={<ArrowForward />}
+              endIcon={loading ? <CircularProgress size={20} color="inherit" /> : <ArrowForward />}
+              disabled={loading}
             >
-              Log In
+              {loading ? "Signing in..." : "Log In"}
             </AppButton>
           </Stack>
         </form>
+
+        <Typography variant="body2" color="text.secondary" textAlign="center" mt={3}>
+          Contact your administrator if you need help accessing your account
+        </Typography>
       </Container>
     </Box>
   );

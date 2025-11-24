@@ -1,5 +1,6 @@
 // src/api/shopApi.ts
 import axios from "axios";
+import { getAuth } from "firebase/auth";
 
 export interface Shop {
   id: number;
@@ -28,6 +29,23 @@ export interface ApiResponse<T> {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+// Get auth headers with fresh token
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  if (typeof window === "undefined") return {};
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) return {};
+
+  // Get fresh ID token from Firebase
+  const token = await user.getIdToken(); 
+  if (!token) return {};
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 // Helper function to map HTTP status codes to error types
 const mapErrorType = (
@@ -68,8 +86,11 @@ export const shopApi = {
   // List all shops
   async getShops(limit = 50, offset = 0): Promise<ApiResponse<Shop[]>> {
     try {
+      const headers = await getAuthHeaders();
+
       const res = await axios.get(`${API_BASE_URL}/shops`, {
         params: { limit, offset },
+        headers,
       });
       return {
         data: res.data,
@@ -92,7 +113,11 @@ export const shopApi = {
   // Get single shop by code
   async getShopByCode(code: string): Promise<ApiResponse<Shop>> {
     try {
-      const res = await axios.get(`${API_BASE_URL}/shops/${code}`);
+      const headers = await getAuthHeaders();
+
+      const res = await axios.get(`${API_BASE_URL}/shops/${code}`, {
+        headers,
+      });
       return {
         data: res.data,
         success: true,
@@ -111,12 +136,16 @@ export const shopApi = {
     }
   },
 
-  //  Create a new shop
+  // Create a new shop
   async createShop(
     shop: Omit<Shop, "id" | "createdAt" | "updatedAt">
   ): Promise<ApiResponse<Shop>> {
     try {
-      const res = await axios.post(`${API_BASE_URL}/shops`, shop);
+      const headers = await getAuthHeaders();
+
+      const res = await axios.post(`${API_BASE_URL}/shops`, shop, {
+        headers,
+      });
       return {
         data: res.data,
         success: true,
@@ -141,7 +170,11 @@ export const shopApi = {
     shop: Partial<Shop>
   ): Promise<ApiResponse<Shop>> {
     try {
-      const res = await axios.put(`${API_BASE_URL}/shops/${code}`, shop);
+      const headers = await getAuthHeaders();
+
+      const res = await axios.put(`${API_BASE_URL}/shops/${code}`, shop, {
+        headers,
+      });
       return {
         data: res.data,
         success: true,

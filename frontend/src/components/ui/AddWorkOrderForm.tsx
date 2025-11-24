@@ -128,20 +128,20 @@ export function WorkOrderForm() {
         customer: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
           address: formData.address,
           city: formData.city,
-          province: formData.state,
           postalCode: formData.zip,
+          province: formData.state,
+          email: formData.email,
+          phone: formData.phone,
         },
         vehicle: {
-          vin: formData.vin,
-          plateNumber: formData.plateNumber,
+          plateNo: formData.plateNumber,      
           make: formData.make,
           model: formData.model,
           bodyStyle: formData.bodyStyle,
-          year: parseInt(formData.year),
+          modelYear: parseInt(formData.year),
+          vin: formData.vin,
           color: formData.color,
         },
         insurance: {
@@ -152,13 +152,14 @@ export function WorkOrderForm() {
           policyNumber: formData.policyNumber,
           claimNumber: formData.claimNumber,
         },
-        shopId: "b9d5b5ec-14d9-4ff8-9db0-8c4a2f781e61",
-        createdByUserId: "13fbd8c4-cd6a-4c4a-b4d8-b417ed14b12a",
+
+        //shopId: "b9d5b5ec-14d9-4ff8-9db0-8c4a2f781e61",
+        //createdByUserId: "13fbd8c4-cd6a-4c4a-b4d8-b417ed14b12a",
       };
 
       const res = await createWorkOrder(payload);
-      console.log("✅ Work Order Created:", res.id);
-      alert(`Work order created successfully! ID: ${res.id}`);
+      console.log("✅ Work Order Created:", res.code);
+      alert(`Work order created successfully! ID: ${res.code}`);
       handleCancel();
     } catch (err: unknown) {
       if (err instanceof Error) {
