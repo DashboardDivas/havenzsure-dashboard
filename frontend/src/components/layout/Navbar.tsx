@@ -17,20 +17,26 @@ import ThemeMenuButton from "@/components/theme/ThemeMenuButton";
 import SearchBar from "@/components/ui/SearchBar";
 import UserProfile from "./UserProfile";
 import NotificationPanel from "@/components/ui/NotificationPanel";
+import { useRouter } from "next/navigation";
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const theme = useTheme();
+  const router = useRouter();
   const [filter, setFilter] = useState<"workOrder" | "customer">("workOrder");
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const handleSearch = () => {
-    console.log(
-      `Searching for "${query}" by ${
-        filter === "workOrder" ? "Work Order ID" : "Customer Name"
-      }`
-    );
+    if (query.trim()) {
+      const params = new URLSearchParams();
+      params.set("q", query);
+      params.set("filter", filter);
+      router.push(`/workorder?${params.toString()}`);
+    } else {
+      // If query is empty, maybe just go to workorder page without params?
+      router.push("/workorder");
+    }
   };
 
   return (
