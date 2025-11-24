@@ -202,13 +202,6 @@ export default function ShopDetailPage() {
   const handleEditChange = (field: keyof Shop, value: string) => {
     if (!editedShop) return;
 
-    // Special handling for code changes
-    if (field === "code" && value !== originalCode && value !== editedShop.code) {
-      setPendingCodeChange(value);
-      setShowCodeConfirm(true);
-      return;
-    }
-
     let formattedValue = value;
 
     // Apply formatting
@@ -242,25 +235,28 @@ export default function ShopDetailPage() {
 
   // Handle code change confirmation
   const handleCodeChangeConfirm = () => {
-    if (!editedShop) return;
-
-    const updatedShop = { ...editedShop, code: pendingCodeChange };
-    setEditedShop(updatedShop);
-
-    // Mark field as touched and validate
-    setTouchedFields((prev) => ({ ...prev, code: true }));
-    const error = validateField("code", pendingCodeChange);
-    setFieldErrors((prev) => ({ ...prev, code: error }));
-    validateAllFields(updatedShop);
-
     setShowCodeConfirm(false);
     setPendingCodeChange("");
   };
 
   // Handle code change cancel
   const handleCodeChangeCancel = () => {
+    if (editedShop) {
+      const reverted = { ...editedShop, code: originalCode };
+      setEditedShop(reverted);
+      const error = validateField("code", originalCode);
+      setFieldErrors((prev) => ({ ...prev, code: error }));
+    }
     setShowCodeConfirm(false);
     setPendingCodeChange("");
+  };
+
+  // Handle code blur to trigger confirmation
+  const handleCodeBlur = () => {
+    if (editedShop && editedShop.code !== originalCode) {
+      setPendingCodeChange(editedShop.code);
+      setShowCodeConfirm(true);
+    }
   };
 
   // Open edit dialog with validation reset
@@ -497,6 +493,7 @@ export default function ShopDetailPage() {
                 label="Shop Code"
                 value={editedShop.code}
                 onChange={(e) => handleEditChange("code", e.target.value)}
+                onBlur={handleCodeBlur}
                 error={!!(touchedFields.code && fieldErrors.code)}
                 helperText={touchedFields.code ? fieldErrors.code : ""}
                 fullWidth
