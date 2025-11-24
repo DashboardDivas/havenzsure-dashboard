@@ -17,13 +17,14 @@ import ThemeMenuButton from "@/components/theme/ThemeMenuButton";
 import SearchBar from "@/components/ui/SearchBar";
 import UserProfile from "./UserProfile";
 import NotificationPanel from "@/components/ui/NotificationPanel";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const theme = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+
   const [filter, setFilter] = useState<"workOrder" | "customer">("workOrder");
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -75,13 +76,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </Box>
 
           {/* Center: SearchBar */}
-          <SearchBar
-            filter={filter}
-            setFilter={setFilter}
-            query={query}
-            setQuery={setQuery}
-            onSearch={handleSearch}
-          />
+          {pathname !== "/dashboard" && pathname !== "/" && (
+            <SearchBar
+              filter={filter}
+              setFilter={setFilter}
+              query={query}
+              setQuery={setQuery}
+              onSearch={handleSearch}
+            />
+          )}
 
           {/* Right: Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
