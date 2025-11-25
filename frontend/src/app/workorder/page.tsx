@@ -21,7 +21,7 @@ import { WorkOrderListItem, getWorkOrders } from "@/lib/api/workorderApi";
 import type { StatusType } from "@/components/ui/StatusChip";
 
 import { useTheme } from "@mui/material/styles";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Status icons
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -48,6 +48,9 @@ const formatDate = (s?: string) => {
 export default function WorkOrdersPage() {
   const theme = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") || "";
+  const searchFilter = searchParams.get("filter") || "workOrder";
 
   // ---- keep logic/state from uploaded file ----
   const [workOrders, setWorkOrders] = useState<WorkOrderListItem[]>([]);
@@ -67,7 +70,7 @@ export default function WorkOrdersPage() {
     getWorkOrders()
       .then((data) => {
         setWorkOrders(data);
-        setFilteredOrders(data);
+        // setFilteredOrders(data); // Let the filter effect handle this
         setLoading(false);
       })
       .catch((err) => {
@@ -76,15 +79,37 @@ export default function WorkOrdersPage() {
       });
   }, []);
 
+  // New effect to handle filtering
+  useEffect(() => {
+    let result = workOrders;
+
+    // 1. Apply Status Filter
+    if (statusFilter !== "all") {
+      result = result.filter((wo) => wo.status === statusFilter);
+    }
+
+    // 2. Apply Search Filter
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      if (searchFilter === "workOrder") {
+        // Filter by Work Order ID (code)
+        result = result.filter((wo) => wo.code.toLowerCase().includes(lowerQuery));
+      } else if (searchFilter === "customer") {
+        // Filter by Customer Name
+        result = result.filter((wo) =>
+          (wo.customerFullName || "").toLowerCase().includes(lowerQuery)
+        );
+      }
+    }
+
+    setFilteredOrders(result);
+    setPage(0); // Reset to first page on filter change
+  }, [workOrders, statusFilter, searchQuery, searchFilter]);
+
   const handleFilterChange = (_: React.MouseEvent<HTMLElement>, newFilter: string) => {
     if (newFilter !== null) {
       setStatusFilter(newFilter);
-      if (newFilter === "all") {
-        setFilteredOrders(workOrders);
-      } else {
-        setFilteredOrders(workOrders.filter((wo) => wo.status === newFilter));
-      }
-      setPage(0);
+      // Filtering is now handled by useEffect
     }
   };
 
