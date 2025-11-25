@@ -6,14 +6,21 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import { Box, CircularProgress } from "@mui/material";
+import { usePathname } from "next/navigation";   
 
 // Auth-aware layout wrapper
 function AuthLayout({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
+  // If on /login page → hide navbar + sidebar (DO THIS FIRST)
+  const isAuthPage = pathname === "/";
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
   // Show loading screen while auth is initializing
-  // This prevents API calls from being made before Firebase auth is ready
   if (loading) {
     return (
       <Box
