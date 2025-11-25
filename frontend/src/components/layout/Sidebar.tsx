@@ -237,7 +237,7 @@ export default function Sidebar({
               "&:hover": { borderColor: theme.palette.primary.dark },
             }}
           >
-            View All Activity
+            View All Activity 
           </Button>
         </Box>
       </Box>
