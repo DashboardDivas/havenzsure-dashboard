@@ -3,6 +3,8 @@
 // Edited and reviewed by AN-NI HUANG
 // Date: 2025-11-23
 
+import { User } from "lucide-react";
+
 export interface Role {
   code: string;
   name: string;
@@ -49,11 +51,13 @@ export interface UpdateUserInput {
   shopCode?: string;
 }
 
-// Auth user from token
-export interface AuthUser {
-  id: string;
-  email: string;
+export interface UpdateCurrentUserProfileInput {
+  phone?: string;
+  imageUrl?: string;
 }
+
+// Auth user from token
+export type AuthUser = Pick<User, "id" | "code" | "firstName" | "lastName" | "email" |"phone" | "imageUrl" | "createdAt"| "role" | "shop">;
 
 // API response types
 export interface UserListResponse {
