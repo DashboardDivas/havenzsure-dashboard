@@ -153,9 +153,9 @@ function normalizeListRow(row: any): WorkOrderListItem {
   // Vehicle — allow nested or flat
   const veh = row.vehicle || {};
   const plateNumber = coalesce(
-    safeStr(row.plate_number),
-    safeStr(veh.plate_number),
-    safeStr(veh.plateNumber)
+    safeStr(row.plateNo),
+    safeStr(veh.plateNo),
+    safeStr(veh.plateNo)
   );
   const make = coalesce(safeStr(row.make), safeStr(veh.make));
   const model = coalesce(safeStr(row.model), safeStr(veh.model));
