@@ -197,7 +197,7 @@ export const userApi = {
 
   /**
    * Update current user's own profile (phone, imageUrl)
-   * -> PATCH /me/profile
+   * -> PUT /me
    */
   updateCurrentUserProfile: async (userData: UpdateCurrentUserProfileInput): Promise<AuthUser> => {
     const headers = await getAuthHeaders();
