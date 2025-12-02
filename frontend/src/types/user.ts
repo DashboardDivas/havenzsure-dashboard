@@ -3,8 +3,6 @@
 // Edited and reviewed by AN-NI HUANG
 // Date: 2025-11-23
 
-import { User } from "lucide-react";
-
 export interface Role {
   code: string;
   name: string;
