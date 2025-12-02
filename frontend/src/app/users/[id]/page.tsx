@@ -31,9 +31,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import EmailIcon from "@mui/icons-material/Email";
 import { User, UpdateUserInput } from "@/types/user";
 import { userApi } from "@/lib/api/userApi";
+import { shopApi } from "@/lib/api/shopApi"; 
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
 import { formatPhone } from "@/lib/utils";
+
+interface Shop {
+  id: string;
+  code: string;
+  shopName: string;
+  status: "active" | "inactive";
+}
 
 export default function UserProfilePage() {
   const { id } = useParams();
@@ -50,20 +58,22 @@ export default function UserProfilePage() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
 
+  // ⬅ NEW STATES FOR ACTIVE SHOPS
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [shopsLoading, setShopsLoading] = useState(false);
+  const [shopsError, setShopsError] = useState<string | null>(null);
+
   // Fake upload function
   async function uploadUserAvatarFake(userId: string, file: File): Promise<string> {
     console.log("[DEV] Fake avatar upload", userId, file);
-    // Just return a placeholder URL for now
-    return `https://havezsuredashboard.com/seed=${encodeURIComponent(
-      userId
-    )}`;
+    return `https://havezsuredashboard.com/seed=${encodeURIComponent(userId)}`;
   }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file)); // Local preview
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
   // Fetch user data
@@ -87,6 +97,34 @@ export default function UserProfilePage() {
     fetchUser();
   }, [id]);
 
+  useEffect(() => {
+    const getShops = async () => {
+      try {
+        setShopsLoading(true);
+        const response = await shopApi.getShops(500, 0);
+
+        const rawList = Array.isArray(response.data) ? response.data : [];
+
+        const activeShops = rawList
+          .filter((s: any) => s.status === "active")
+          .map((s: any) => ({
+            id: String(s.id),
+            code: s.code,
+            shopName: s.shopName,
+            status: s.status,
+          }));
+
+        setShops(activeShops);
+      } catch (err) {
+        setShopsError("Failed to load shops");
+      } finally {
+        setShopsLoading(false);
+      }
+    };
+
+    getShops();
+  }, []);
+
   const handleEditOpen = () => {
     if (!user) return;
     setEditData({
@@ -108,10 +146,8 @@ export default function UserProfilePage() {
     try {
       setSaving(true);
 
-      // Prepare payload
       const payload: UpdateUserInput = { ...editData };
 
-      // Handle avatar upload if a new file is selected
       if (avatarFile) {
         const uploadedUrl = await uploadUserAvatarFake(user.id, avatarFile);
         payload.imageUrl = uploadedUrl;
@@ -138,7 +174,6 @@ export default function UserProfilePage() {
       } else {
         await userApi.reactivate(user.id);
       }
-      // Refresh user data
       const refreshed = await userApi.getById(user.id);
       setUser(refreshed);
     } catch (err: any) {
@@ -204,7 +239,7 @@ export default function UserProfilePage() {
       </Box>
 
       <Paper elevation={2} sx={{ p: 4, borderRadius: 3, maxWidth: 900, mx: "auto" }}>
-        {/* Top row: avatar + info + actions */}
+        {/* Top row */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={3}
@@ -254,7 +289,7 @@ export default function UserProfilePage() {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Details */}
+        {/* Details List */}
         <List disablePadding>
           <ListItem>
             <ListItemText primary="User Code" secondary={user.code} />
@@ -331,7 +366,7 @@ export default function UserProfilePage() {
         <DialogTitle>Edit User Details</DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           <Stack spacing={2}>
-            {/* Avatar Upload Placeholder */}
+            {/* Avatar */}
             <Box display="flex" alignItems="center" gap={2}>
               <Avatar
                 src={avatarPreview || editData.imageUrl || user.imageUrl || undefined}
@@ -386,14 +421,18 @@ export default function UserProfilePage() {
             <TextField
               label="Phone (Format: 403-123-4567)"
               value={editData.phone || ""}
-              onChange={(e) => setEditData({ ...editData, phone: formatPhone(e.target.value) })}
+              onChange={(e) =>
+                setEditData({ ...editData, phone: formatPhone(e.target.value) })
+              }
               fullWidth
             />
             <TextField
               select
               label="Role"
               value={editData.roleCode || ""}
-              onChange={(e) => setEditData({ ...editData, roleCode: e.target.value })}
+              onChange={(e) =>
+                setEditData({ ...editData, roleCode: e.target.value })
+              }
               fullWidth
             >
               <MenuItem value="superadmin">Super Administrator</MenuItem>
@@ -401,15 +440,33 @@ export default function UserProfilePage() {
               <MenuItem value="adjuster">Adjuster</MenuItem>
               <MenuItem value="bodyman">Bodyman</MenuItem>
             </TextField>
+
             <TextField
+              select
               label="Shop Code (Optional)"
               value={editData.shopCode || ""}
-              onChange={(e) => setEditData({ ...editData, shopCode: e.target.value })}
+              onChange={(e) =>
+                setEditData({ ...editData, shopCode: e.target.value })
+              }
               fullWidth
-              helperText="Leave empty if user is not assigned to a shop"
-            />
+              helperText={
+                shopsError
+                  ? shopsError
+                  : ""
+              }
+              disabled={shopsLoading}
+            >
+              <MenuItem value="">No Shop Assigned</MenuItem>
+
+              {shops.map((shop) => (
+                <MenuItem key={shop.id} value={shop.code}>
+                  {shop.code} — {shop.shopName}
+                </MenuItem>
+              ))}
+            </TextField>
           </Stack>
         </DialogContent>
+
         <DialogActions sx={{ pr: 3, pb: 2 }}>
           <AppButton variant="outlined" onClick={() => setOpenEdit(false)}>
             Cancel
