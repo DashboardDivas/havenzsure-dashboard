@@ -117,11 +117,11 @@ export function AddShopForm() {
     const response = await shopApi.createShop(formData);
 
     if (response.success && response.data) {
-      console.log("✅ Shop created:", response.data);
+      console.log("Shop created:", response.data);
       showSuccess(`Shop "${response.data.shopName}" added successfully!`);
       handleCancel();
     } else if (response.error) {
-      console.log("❌ Failed to create shop:", response.error);
+      console.log("Failed to create shop:", response.error);
       showError(response.error.message);
     }
 
