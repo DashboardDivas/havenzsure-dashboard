@@ -78,10 +78,15 @@ export interface VehicleIntake {
   color: string;
 }
  
+export interface ShopIntake {
+  shopCode: string;
+}
+
 export interface IntakePayload {
   customer: CustomerIntake;
   vehicle: VehicleIntake;
-  insurance: InsuranceIntake | null; 
+  insurance: InsuranceIntake | null;
+  shop: ShopIntake;
 }
 // ========== Helpers ==========
 
