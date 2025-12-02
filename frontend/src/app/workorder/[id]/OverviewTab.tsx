@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import {
   Typography,
   Box,
@@ -27,29 +28,44 @@ import {
   Chip,
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
-import { fakeApi, WorkOrder, User } from "@/lib/fakeApi";
+import { fakeApi, WorkOrder } from "@/lib/fakeApi";
+import { userApi } from "@/lib/api/userApi";
+import { getWorkOrderByCode, WorkOrderDetail } from "@/lib/api/workorderApi";
+import { User } from "@/types/user";
 import StatusChip from "@/components/ui/StatusChip";
 import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
 
 
 export default function OverviewTab() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const [users, setUsers] = useState<User[]>([]);
-  const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
+  const [workOrder, setWorkOrder] = useState<WorkOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    async function loadWorkOrders() {
+    async function loadData() {
+      if (!id) return;
       setLoading(true);
-      setUsers(await fakeApi.getUsers());
-      const data = await fakeApi.getWorkOrders();
-      setWorkOrder(data[0]);
-      setLoading(false);
+      try {
+        const [usersData, workOrderData] = await Promise.all([
+          userApi.list(),
+          getWorkOrderByCode(id),
+        ]);
+        setUsers(usersData);
+        setWorkOrder(workOrderData);
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-    loadWorkOrders();
-  }, []);
+    loadData();
+  }, [id]);
 
   const handleAssignClick = () => setAssignDialogOpen(true);
 
@@ -65,6 +81,7 @@ export default function OverviewTab() {
   };
 
   const handleConfirmYes = () => {
+    // TODO: Implement assignment API call here
     setAssignDialogOpen(false);
     setConfirmDialogOpen(false);
     setSelectedUser(null);
@@ -137,23 +154,23 @@ export default function OverviewTab() {
                 sx={{ cursor: "pointer" }}
               >
                 <ListItemAvatar>
-                  <Avatar src={user.avatar} alt={user.name} />
+                  <Avatar src={user.imageUrl} alt={`${user.firstName} ${user.lastName}`} />
                 </ListItemAvatar>
                 <ListItemText
                   primary={
                     <Box display="flex" alignItems="center" gap={1}>
-                      <Typography fontWeight={600}>{user.name}</Typography>
-                      <Chip label={user.role} size="small" sx={{ ml: 1 }} />
+                      <Typography fontWeight={600}>{user.firstName} {user.lastName}</Typography>
+                      <Chip label={user.role.name} size="small" sx={{ ml: 1 }} />
                     </Box>
                   }
                   secondary={
                     <>
                       <Typography component="span" variant="body2" color="text.secondary">
-                        Status: {user.status}
+                        Status: {user.isActive ? "Active" : "Inactive"}
                       </Typography>
                       <br />
                       <Typography component="span" variant="body2" color="text.secondary">
-                        Repair Shop: {user.repairShop}
+                        Repair Shop: {user.shop?.name || "—"}
                       </Typography>
                     </>
                   }
@@ -173,7 +190,7 @@ export default function OverviewTab() {
         <DialogContent>
           <Typography>
             Assign work order to{" "}
-            <strong>{selectedUser?.name}</strong>?
+            <strong>{selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ""}</strong>?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -204,18 +221,18 @@ export default function OverviewTab() {
             <Divider sx={{ mb: 2 }} />
             <Box display="flex" alignItems="center" gap={2} mb={2}>
               <Avatar
-                src={workOrder.customerAvatar}
-                alt={workOrder.customer}
+                // src={workOrder.customerAvatar} // Not available in API yet
+                alt={workOrder.customerFullName}
                 sx={{ width: 60, height: 60 }}
               />
               <Box>
-                <Typography fontWeight={600}>{workOrder.customer}</Typography>
-                <StatusChip status={workOrder.status} />
+                <Typography fontWeight={600}>{workOrder.customerFullName}</Typography>
+                <StatusChip status={workOrder.status as any} />
               </Box>
             </Box>
-            <Info label="Phone" value={workOrder.phone} />
-            <Info label="Email" value={workOrder.email} />
-            <Info label="Address" value={workOrder.address} />
+            <Info label="Phone" value={workOrder.customerPhone} />
+            <Info label="Email" value={workOrder.customerEmail} />
+            <Info label="Address" value={workOrder.customerAddress} />
           </CardContent>
         </Card>
 
@@ -226,7 +243,7 @@ export default function OverviewTab() {
               Vehicle Info
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Info label="Plate" value={workOrder.plate} />
+            <Info label="Plate" value={workOrder.plateNumber} />
             <Info label="Make" value={workOrder.make} />
             <Info label="Model" value={workOrder.model} />
           </CardContent>
@@ -322,8 +339,9 @@ export default function OverviewTab() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {workOrder.dents?.length ? (
-                  workOrder.dents.map((dent, idx) => (
+                {/* Dents are not yet in the API response, so we show empty state for now */}
+                {(workOrder as any).dents?.length ? (
+                  (workOrder as any).dents.map((dent: any, idx: number) => (
                     <TableRow
                       key={idx}
                       hover
