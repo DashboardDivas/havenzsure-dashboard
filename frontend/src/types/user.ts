@@ -49,11 +49,13 @@ export interface UpdateUserInput {
   shopCode?: string;
 }
 
-// Auth user from token
-export interface AuthUser {
-  id: string;
-  email: string;
+export interface UpdateCurrentUserProfileInput {
+  phone?: string;
+  imageUrl?: string;
 }
+
+// Auth user from token
+export type AuthUser = Pick<User, "id" | "code" | "firstName" | "lastName" | "email" |"phone" | "imageUrl" | "createdAt" | "role" | "shop">;
 
 // API response types
 export interface UserListResponse {

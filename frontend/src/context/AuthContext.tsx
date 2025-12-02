@@ -14,6 +14,7 @@ import {
   User as FirebaseUser,
 } from 'firebase/auth';
 import { AuthUser } from '@/types/user';
+import { userApi } from '@/lib/api/userApi';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -44,14 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // Get ID token for parsing custom claims (role, shop, etc.)
-          const idToken = await firebaseUser.getIdToken();
-          const tokenPayload = parseJwt(idToken);
-
-          setUser({
-            id: tokenPayload.user_id || firebaseUser.uid,
-            email: firebaseUser.email || '',
-          });
+          //  Use /me endpoint to get user info.
+          const currentUser = await userApi.getCurrentUser();
+          setUser(currentUser);
 
           // Setup automatic token refresh
           setupTokenRefresh(firebaseUser);
@@ -187,7 +183,7 @@ export function useAuth() {
   return context;
 }
 
-// Helper to parse JWT token (basic implementation)
+// Helper to parse JWT token if we need to extract claims in future
 function parseJwt(token: string): any {
   try {
     const base64Url = token.split('.')[1];
