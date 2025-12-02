@@ -33,6 +33,7 @@ import { User, UpdateUserInput } from "@/types/user";
 import { userApi } from "@/lib/api/userApi";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
+import { formatPhone } from "@/lib/utils";
 
 export default function UserProfilePage() {
   const { id } = useParams();
@@ -385,7 +386,7 @@ export default function UserProfilePage() {
             <TextField
               label="Phone (Format: 403-123-4567)"
               value={editData.phone || ""}
-              onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+              onChange={(e) => setEditData({ ...editData, phone: formatPhone(e.target.value) })}
               fullWidth
             />
             <TextField

@@ -18,6 +18,7 @@ import { AppButton } from "@/components/ui/Buttons";
 import { CreateUserInput } from "@/types/user";
 import { userApi } from "@/lib/api/userApi";
 import { shopApi } from "@/lib/api/shopApi";
+import { formatPhone } from "@/lib/utils";
 
 interface AddUserFormProps {
   onSuccess?: () => void;
@@ -85,7 +86,11 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
   }, []);
 
   const handleChange = (field: keyof CreateUserInput, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value || undefined }));
+    let newValue = value;
+    if (field === "phone") {
+      newValue = formatPhone(value);
+    }
+    setFormData((prev) => ({ ...prev, [field]: newValue || undefined }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
