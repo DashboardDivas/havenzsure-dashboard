@@ -55,7 +55,7 @@ export interface UpdateCurrentUserProfileInput {
 }
 
 // Auth user from token
-export type AuthUser = Pick<User, "id" | "code" | "firstName" | "lastName" | "email" |"phone" | "imageUrl" | "createdAt"| "role" | "shop">;
+export type AuthUser = Pick<User, "id" | "code" | "firstName" | "lastName" | "email" |"phone" | "imageUrl" | "createdAt" | "role" | "shop">;
 
 // API response types
 export interface UserListResponse {

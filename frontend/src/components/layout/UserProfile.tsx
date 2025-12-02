@@ -68,7 +68,7 @@ export default function UserProfile({
     employeeId: user?.code,
     email: user?.email,
     phone: phone ? phone : "N/A",
-    shop: user?.shop?.name ||"No Shop Assigned",    
+    shop: user?.shop?.name || "No Shop Assigned",    
     location: "N/A",  // we don't have location in user table with current db
     joinedDate: user?.createdAt?.split("T")[0] || "", // place create date here for now
     avatar: user?.imageUrl || "/admin.jpg",
@@ -279,7 +279,7 @@ export default function UserProfile({
         </Box>
 
         <Typography variant="body2" color="text.secondary">
-          {userData.shop?`Shop: ${userData.shop}`:"No Shop Assigned"}
+          {userData.shop ? `Shop: ${userData.shop}` : "No Shop Assigned"}
         </Typography>
 
         {/* Stats */}

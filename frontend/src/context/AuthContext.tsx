@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // use /me endpoint to get user info
+          //  Use /me endpoint to get user info.
           const currentUser = await userApi.getCurrentUser();
           setUser(currentUser);
 
@@ -183,7 +183,7 @@ export function useAuth() {
   return context;
 }
 
-// Key helper to parse JWT token if we need to extract claims in future
+// Helper to parse JWT token if we need to extract claims in future
 function parseJwt(token: string): any {
   try {
     const base64Url = token.split('.')[1];
