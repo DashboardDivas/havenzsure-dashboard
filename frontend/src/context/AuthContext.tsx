@@ -6,7 +6,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/auth/firebase';
 import { 
   signInWithEmailAndPassword, 
   signOut as firebaseSignOut,
