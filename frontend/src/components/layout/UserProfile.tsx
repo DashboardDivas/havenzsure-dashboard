@@ -38,8 +38,10 @@ import {
   IdCard,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/context/AuthContext";
+import { userApi } from "@/lib/api/userApi";
+
+const phoneRegex = /^\d{3}-\d{3}-\d{4}$/; // Simple regex for XXX-XXX-XXXX format
 
 export default function UserProfile({
   open,
@@ -48,26 +50,54 @@ export default function UserProfile({
   open: boolean;
   onClose: () => void;
 }) {
-  const [editMode, setEditMode] = useState(false);
-  const [signingOut, setSigningOut] = useState(false); 
+  // Context
+  const { signOut, user } = useAuth();
   const theme = useTheme();
-  const router = useRouter(); 
+  const router = useRouter();
 
+  // State
+  const [editMode, setEditMode] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false); 
+  const [phone, setPhone] = useState(user?.phone ?? "");
+
+  // User data from context
   const userData = {
-    name: "Himanshi Punj",
-    role: "Admin",
-    employeeId: "EMP-2024-1001",
-    email: "himanshi.punj@company.com",
-    phone: "+1 (416) 555-9083",
-    department: "Claims & Operations Management",
-    location: "Toronto, Canada",
-    joinedDate: "March 12, 2023",
-    avatar: "/admin.jpg", // ✅ local image from /public
+    name: `${user?.firstName} ${user?.lastName}`,
+    role: user?.role.name || "User",
+    employeeId: user?.code,
+    email: user?.email,
+    phone: phone ? phone : "N/A",
+    shop: user?.shop?.name ||"No Shop Assigned",    
+    location: "N/A",  // we don't have location in user table with current db
+    joinedDate: user?.createdAt?.split("T")[0] || "", // place create date here for now
+    avatar: user?.imageUrl || "/admin.jpg",
   };
+
+  const contactItems = [
+    { icon: <Mail size={18} />, label: "Email", value: userData.email },
+    { icon: <Phone size={18} />, label: "Phone", value: userData.phone },
+    { icon: <MapPin size={18} />, label: "Location", value: userData.location },
+    { icon: <Briefcase size={18} />, label: "Shop", value: userData.shop },
+    { icon: <Calendar size={18} />, label: "Joined", value: userData.joinedDate },
+    { icon: <IdCard size={18} />, label: "Employee ID", value: userData.employeeId },
+  ];
+
+  const stats = [
+    { label: "Active Claims", value: "32", icon: <FileText size={18} /> },
+    { label: "Pending Reviews", value: "11", icon: <Clock size={18} /> },
+    { label: "Completed", value: "210", icon: <Shield size={18} /> },
+    { label: "This Month", value: "54", icon: <Calendar size={18} /> },
+  ];
 
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
-      case "admin":
+      case "super administrator":
+        return {
+          bgcolor: theme.palette.error.main,
+          color: theme.palette.error.contrastText,
+        };
+      case "administrator":
         return {
           bgcolor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
@@ -90,20 +120,37 @@ export default function UserProfile({
     }
   };
 
-  const stats = [
-    { label: "Active Claims", value: "32", icon: <FileText size={18} /> },
-    { label: "Pending Reviews", value: "11", icon: <Clock size={18} /> },
-    { label: "Completed", value: "210", icon: <Shield size={18} /> },
-    { label: "This Month", value: "54", icon: <Calendar size={18} /> },
-  ];
+  const handleEditClick = async () => {
+    if (!editMode) {
+      setEditMode(true);
+      return;
+    }
+
+    const trimmed = phone.trim();
+
+    // Validate phone format
+    if (trimmed !== "" && !phoneRegex.test(trimmed)) {
+      setEditError("Invalid phone format. Use XXX-XXX-XXXX.");
+      return; // stop if validation fails
+    }
+
+    try {
+      await userApi.updateCurrentUserProfile({
+        phone: trimmed || undefined, // empty string means clear → becomes undefined
+      });
+      setEditMode(false);
+    } catch (err: any) {
+      setEditError(err.message || "Update failed, please try again later");
+    }
+  };
 
 // logic to handle sign out
   const handleSignOut = async () => {
     try {
       setSigningOut(true);
-      await signOut(auth);           
+      await signOut(); // Use signOut from AuthContext        
       onClose();                    
-      router.push("/login");         
+      router.push("/");         
     } catch (err) {
       console.error("Failed to sign out:", err);
       alert("Sign out failed, please try again.");
@@ -194,7 +241,7 @@ export default function UserProfile({
               variant="outlined"
               size="small"
               startIcon={<Edit size={15} />}
-              onClick={() => setEditMode(!editMode)}
+              onClick={handleEditClick}
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
@@ -208,20 +255,11 @@ export default function UserProfile({
             </Button>
           </Box>
         </Box>
-
-        {editMode ? (
-          <TextField
-            fullWidth
-            defaultValue={userData.name}
-            variant="outlined"
-            size="small"
-            sx={{ mb: 1 }}
-          />
-        ) : (
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+       
+        <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
             {userData.name}
-          </Typography>
-        )}
+        </Typography>
+        
 
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
           <Chip
@@ -241,7 +279,7 @@ export default function UserProfile({
         </Box>
 
         <Typography variant="body2" color="text.secondary">
-          {userData.department}
+          {userData.shop?`Shop: ${userData.shop}`:"No Shop Assigned"}
         </Typography>
 
         {/* Stats */}
@@ -295,26 +333,71 @@ export default function UserProfile({
           Contact Information
         </Typography>
         <List sx={{ py: 0 }}>
-          {[
-            { icon: <Mail size={18} />, label: "Email", value: userData.email },
-            { icon: <Phone size={18} />, label: "Phone", value: userData.phone },
-            { icon: <MapPin size={18} />, label: "Location", value: userData.location },
-            { icon: <Briefcase size={18} />, label: "Department", value: userData.department },
-            { icon: <Calendar size={18} />, label: "Joined", value: userData.joinedDate },
-            { icon: <IdCard size={18} />, label: "Employee ID", value: userData.employeeId },
-          ].map((item) => (
-            <ListItem key={item.label} sx={{ px: 0, py: 1.5 }}>
-              <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                secondary={item.value}
-                slotProps={{
-                  primary: { variant: "caption", color: "text.secondary" },
-                  secondary: { variant: "body2", color: "text.primary" },
-                }}
-              />
-            </ListItem>
-          ))}
+          {contactItems.map((item) => {
+            if (item.label === "Phone") {
+              // Custom rendering for phone field in edit mode
+              return (
+                <ListItem key={item.label} sx={{ px: 0, py: 1.5 }}>
+                  <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block" }}
+                    >
+                      {item.label}
+                    </Typography>
+
+                    {editMode ? (
+                      <Box>
+                        <TextField
+                          value={phone}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setPhone(value);
+
+                            const trimmed = value.trim();
+
+                            if (trimmed === "") {
+                              setEditError(null);
+                            } else if (!phoneRegex.test(trimmed)) {
+                              setEditError("Invalid phone format. Use XXX-XXX-XXXX.");
+                            } else {
+                              setEditError(null);
+                            }
+                          }}
+                          variant="standard"
+                          size="small"
+                          fullWidth
+                          error={Boolean(editError)}       
+                          helperText={editError || ""}     
+                        />
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.primary">
+                        {phone}
+                      </Typography>
+                    )}
+                  </Box>
+                </ListItem>
+              );
+            }
+
+            // Other fields keep the original ListItemText rendering
+            return (
+              <ListItem key={item.label} sx={{ px: 0, py: 1.5 }}>
+                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  secondary={item.value}
+                  slotProps={{
+                    primary: { variant: "caption", color: "text.secondary" },
+                    secondary: { variant: "body2", color: "text.primary" },
+                  }}
+                />
+              </ListItem>
+            );
+          })}
         </List>
 
         <Divider sx={{ my: 3 }} />
