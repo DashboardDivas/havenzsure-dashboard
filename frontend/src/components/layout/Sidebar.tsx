@@ -20,6 +20,8 @@ import {
   Settings,
   History,
 } from "@mui/icons-material";
+import { useAuth } from "@/context/AuthContext";
+import { canManageUsers, canManageShops } from "@/lib/auth/rbac"; 
 
 // Reusable SidebarButton
 function SidebarButton({
@@ -83,12 +85,22 @@ export default function Sidebar({
   onClose: () => void;
 }) {
   const theme = useTheme();
+  const { user } = useAuth(); 
 
   const mainMenuItems = [
     { name: "Dashboard", icon: <Dashboard />, href: "/" },
     { name: "Work Orders", icon: <Assignment />, href: "/workorder" },
-    { name: "Users", icon: <People />, href: "/users" },
-    { name: "Shops", icon: <Store />, href: "/shops" },
+
+    // only admin/superadmin can see Users
+    ...(canManageUsers(user)
+      ? [{ name: "Users", icon: <People />, href: "/users" }]
+      : []),
+
+    // only admin/superadmin can see Shops
+    ...(canManageShops(user)
+      ? [{ name: "Shops", icon: <Store />, href: "/shops" }]
+      : []),
+
     { name: "Jobs", icon: <Work />, href: "/jobs" },
     { name: "History", icon: <History />, href: "/history" },
     { name: "Help", icon: <HelpOutline />, href: "/help" },
