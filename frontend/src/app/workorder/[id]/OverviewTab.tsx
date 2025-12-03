@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import { AppButton } from "@/components/ui/Buttons";
 import { userApi } from "@/lib/api/userApi";
-import { getWorkOrderByCode, WorkOrderDetail } from "@/lib/api/workorderApi";
+import { getWorkOrderByID, WorkOrderDetail } from "@/lib/api/workorderApi";
 import { User } from "@/types/user";
 import StatusChip from "@/components/ui/StatusChip";
 import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
@@ -53,7 +53,7 @@ export default function OverviewTab() {
       try {
         const [usersData, workOrderData] = await Promise.all([
           userApi.list(),
-          getWorkOrderByCode(id),
+          getWorkOrderByID(id as `${string}-${string}-${string}-${string}-${string}`),
         ]);
         setUsers(usersData);
         setWorkOrder(workOrderData);
