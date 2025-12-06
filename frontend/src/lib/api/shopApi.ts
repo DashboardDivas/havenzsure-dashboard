@@ -3,7 +3,7 @@ import axios from "axios";
 import { getAuth } from "firebase/auth";
 
 export interface Shop {
-  id: number;
+  id: string; // UUID
   code: string;
   shopName: string;
   status: "active" | "inactive";
@@ -111,11 +111,11 @@ export const shopApi = {
   },
 
   // Get single shop by code
-  async getShopByCode(code: string): Promise<ApiResponse<Shop>> {
+  async getShopByID(id: string): Promise<ApiResponse<Shop>> {
     try {
       const headers = await getAuthHeaders();
 
-      const res = await axios.get(`${API_BASE_URL}/shops/${code}`, {
+      const res = await axios.get(`${API_BASE_URL}/shops/${id}`, {
         headers,
       });
       return {
@@ -166,13 +166,13 @@ export const shopApi = {
 
   // Update a shop
   async updateShop(
-    code: string,
+    id: string,
     shop: Partial<Shop>
   ): Promise<ApiResponse<Shop>> {
     try {
       const headers = await getAuthHeaders();
 
-      const res = await axios.put(`${API_BASE_URL}/shops/${code}`, shop, {
+      const res = await axios.put(`${API_BASE_URL}/shops/${id}`, shop, {
         headers,
       });
       return {
