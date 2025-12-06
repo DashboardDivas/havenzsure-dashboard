@@ -69,7 +69,7 @@ export default function ShopsPage() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [orderBy, setOrderBy] = useState<keyof Shop | undefined>("code");
+  const [orderBy, setOrderBy] = useState<keyof Shop | undefined>("id");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [open, setOpen] = useState(false);
@@ -188,46 +188,40 @@ export default function ShopsPage() {
   };
 
   // Handle status change
-  const handleStatusChange = async (id: string | number, newStatus: "active" | "inactive", event?: React.SyntheticEvent) => {
-    // Stop event propagation to prevent row click
-    if (event) {
-      event.stopPropagation();
-    }
+  const handleStatusChange = async (shopId: string, 
+    newStatus: "active" | "inactive",) => {
+  // Find the current shop object
+  const currentShop = shops.find((shop) => shop.id === shopId);
+  if (!currentShop) {
+    showError("Shop not found");
+    return;
+  }
 
-    const shopCode = String(id); // Convert to string since shop codes are strings
-
-    // Find the current shop object
-    const currentShop = shops.find(shop => shop.code === shopCode);
-    if (!currentShop) {
-      showError("Shop not found");
-      return;
-    }
-
-    // Create complete updated shop object
-    const updatedShop = {
-      ...currentShop,
-      status: newStatus
-    };
-
-    const response = await shopApi.updateShop(shopCode, updatedShop);
-
-    if (response.success && response.data) {
-      // Update local state
-      setShops((prev) =>
-        prev.map(shop =>
-          shop.code === shopCode ? { ...shop, status: newStatus } : shop
-        )
-      );
-      setFilteredShops((prev) =>
-        prev.map(shop =>
-          shop.code === shopCode ? { ...shop, status: newStatus } : shop
-        )
-      );
-      showSuccess(`Shop status updated to ${newStatus}`);
-    } else if (response.error) {
-      showError(response.error.message);
-    }
+  // Create complete updated shop object
+  const updatedShop: Shop = {
+    ...currentShop,
+    status: newStatus,
   };
+
+  const response = await shopApi.updateShop(shopId, updatedShop);
+
+  if (response.success && response.data) {
+    // Update local state
+    setShops((prev) =>
+      prev.map((shop) =>
+        shop.id === shopId ? { ...shop, status: newStatus } : shop
+      )
+    );
+    setFilteredShops((prev) =>
+      prev.map((shop) =>
+        shop.id === shopId ? { ...shop, status: newStatus } : shop
+      )
+    );
+    showSuccess(`Shop status updated to ${newStatus}`);
+  } else if (response.error) {
+    showError(response.error.message);
+  }
+};
 
   // 🧱 Table columns
   const columns: Column<Shop>[] = [
@@ -251,7 +245,7 @@ export default function ShopsPage() {
         <FormControl size="small" sx={{ minWidth: 100 }} onClick={(e) => e.stopPropagation()}>
           <Select
             value={row.status}
-            onChange={(e) => handleStatusChange(row.code, e.target.value as "active" | "inactive", e)}
+            onChange={(e) => handleStatusChange(row.id, e.target.value as "active" | "inactive")}
             onClick={(e) => e.stopPropagation()}
             variant="outlined"
             sx={{
@@ -580,7 +574,7 @@ export default function ShopsPage() {
             element.style.transition = "opacity 0.3s ease";
             element.style.opacity = "0.3";
             setTimeout(() => {
-              router.push(`/shops/${row.code}`); // ✅ Navigate by code
+              router.push(`/shops/${row.id}`); // ✅ Navigate by id
               element.style.opacity = "1";
             }, 300);
           }}

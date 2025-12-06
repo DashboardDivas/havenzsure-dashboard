@@ -29,7 +29,7 @@ import { shopApi, Shop, ApiResponse } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 
 export default function ShopDetailPage() {
-  const { code } = useParams();
+  const { id } = useParams();
   const router = useRouter();
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,23 +74,18 @@ export default function ShopDetailPage() {
     setSnackOpen(true);
   };
 
-  // Fetch shop details
   useEffect(() => {
-    if (!code) return;
+    if (!id) return;
     let mounted = true;
 
     (async () => {
       setLoading(true);
-      const response = await shopApi.getShops();
+      const response = await shopApi.getShopByID(String(id));
 
       if (!mounted) return;
 
       if (response.success && response.data) {
-        const found = response.data.find((s) => s.code === String(code));
-        setShop(found || null);
-        if (!found) {
-          showError("Shop not found. It may have been deleted or the code is incorrect.");
-        }
+        setShop(response.data);
       } else if (response.error) {
         showError(response.error.message);
         setShop(null);
@@ -102,7 +97,7 @@ export default function ShopDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [code]);
+  }, [id]);
 
   // Validation function
   const validateField = (field: keyof Shop, value: string): string => {
@@ -234,135 +229,120 @@ export default function ShopDetailPage() {
   };
 
   // Handle code change confirmation
-  const handleCodeChangeConfirm = () => {
-    setShowCodeConfirm(false);
-    setPendingCodeChange("");
-  };
+ const handleCodeChangeConfirm = async () => {
+  setShowCodeConfirm(false);
+  setPendingCodeChange("");
+  await handleSave(); // Save changes after confirming code change
+};
 
-  // Handle code change cancel
   const handleCodeChangeCancel = () => {
     if (editedShop) {
-      const reverted = { ...editedShop, code: originalCode };
-      setEditedShop(reverted);
-      const error = validateField("code", originalCode);
-      setFieldErrors((prev) => ({ ...prev, code: error }));
+      setEditedShop({ ...editedShop, code: originalCode });
     }
     setShowCodeConfirm(false);
     setPendingCodeChange("");
   };
 
-  // Handle code blur to trigger confirmation
+  // Handle blur event for shop code field
   const handleCodeBlur = () => {
-    if (editedShop && editedShop.code !== originalCode) {
+    if (editedShop && shop && editedShop.code !== shop.code) {
+      setOriginalCode(shop.code);
       setPendingCodeChange(editedShop.code);
       setShowCodeConfirm(true);
     }
   };
 
-  // Open edit dialog with validation reset
   const handleEditOpen = () => {
-    if (!shop) return;
-    setEditedShop({ ...shop });
-    setOriginalCode(shop.code); // Store original code
-    setFieldErrors({});
-    setTouchedFields({});
-    setIsFormValid(true);
+    if (shop) {
+      setEditedShop({ ...shop });
+      setFieldErrors({});
+      setTouchedFields({});
+      setIsFormValid(true);
+    }
     setOpenEdit(true);
   };
 
   const handleSave = async () => {
-    if (!editedShop || !shop) return;
+  if (!editedShop || !shop) return;
 
-    // Validate all fields and show errors for submission
-    const allErrors = validateAllFields(editedShop);
-    setFieldErrors(allErrors);
+  // Validate all fields before submission
+  const errors = validateAllFields(editedShop);
 
-    if (Object.keys(allErrors).length > 0) {
-      // Mark all required fields as touched so errors show
-      const requiredFields: (keyof Shop)[] = [
-        "code",
-        "shopName",
-        "contactName",
-        "phone",
-        "email",
-        "address",
-        "city",
-        "province",
-        "postalCode",
-      ];
+  // Mark all fields as touched to show errors
+  const allTouched: Record<string, boolean> = {};
+  Object.keys(editedShop).forEach((key) => {
+    allTouched[key] = true;
+  });
+  setTouchedFields(allTouched);
 
-      const allTouched = requiredFields.reduce((acc, field) => ({
-        ...acc,
-        [field]: true
-      }), {});
+  if (Object.keys(errors).length > 0) {
+    setFieldErrors(errors);
+    showError("Please fix all validation errors before saving.");
+    return;
+  }
 
-      setTouchedFields(allTouched);
-      return;
-    }
+  setLoading(true);
 
-    setLoading(true);
-    // Update shop with original shop code
-    const response = await shopApi.updateShop(shop.code, editedShop);
+  try {
+    const response = await shopApi.updateShop(shop.id, editedShop);
 
     if (response.success && response.data) {
       setShop(response.data);
-      setEditedShop(response.data);
       setOpenEdit(false);
-      showSuccess(`Shop updated successfully!`);
-      console.log("✅ Shop updated globally:", response.data);
-
-      // If the shop code changed, redirect to the new URL
-      if (response.data.code !== shop.code) {
-        router.push(`/shops/${response.data.code}`);
-      }
+      showSuccess("Shop updated successfully!");
     } else if (response.error) {
-      // Handle 409 conflict specifically
-      if (response.error.message?.includes('409') ||
-        response.error.message?.toLowerCase().includes('already exists') ||
-        response.error.message?.toLowerCase().includes('duplicate')) {
-        showError(`Shop code '${editedShop.code}' already exists. Please use a different code.`);
+      const msg = (response.error.message || "").toLowerCase();
+      const isCodeConflict =
+        msg.includes("code") &&
+        (msg.includes("exists") ||
+          msg.includes("already") ||
+          msg.includes("duplicate"));
 
-        // Revert code to original and keep dialog open
-        const revertedShop = { ...editedShop, code: originalCode };
-        setEditedShop(revertedShop);
-        setFieldErrors((prev) => ({ ...prev, code: "" }));
-        validateAllFields(revertedShop);
+      if (isCodeConflict && editedShop.code !== shop.code) {
+        setEditedShop((prev) =>
+          prev ? { ...prev, code: shop.code } : prev
+        );
+
+        setFieldErrors((prev) => ({
+          ...prev,
+          code:
+            "This shop code is already in use. It has been reverted to the original value.",
+        }));
+
+        showError(
+          "This shop code is already in use. The code has been reverted to the original value."
+        );
       } else {
-        showError("Failed to update shop");
+        showError(response.error.message);
       }
-      console.log("❌ Failed to update shop:", response.error);
     }
-
+  } catch (error) {
+    showError("Failed to update shop. Please try again.");
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
-  // Loading state
+
   if (loading) {
     return (
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        height="70vh"
-      >
+      <Box display="flex" alignItems="center" justifyContent="center" height="70vh">
         <CircularProgress />
       </Box>
     );
   }
 
-  // Shop not found
   if (!shop) {
     return (
       <Box p={4}>
         <Typography variant="h6" color="error" mb={2}>
-          Shop not found.
+          Shop not found
         </Typography>
         <AppButton onClick={() => router.push("/shops")}>Go Back</AppButton>
       </Box>
     );
   }
 
-  // ✅ Main content
   return (
     <Box p={4}>
       {/* Header */}
@@ -375,17 +355,8 @@ export default function ShopDetailPage() {
         </Typography>
       </Box>
 
-      {/* Main Card */}
-      <Paper
-        elevation={2}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          maxWidth: 900,
-          mx: "auto",
-        }}
-      >
-        {/* Top Row: Shop Name + Status + Actions */}
+      <Paper elevation={2} sx={{ p: 4, borderRadius: 3, maxWidth: 900, mx: "auto" }}>
+        {/* Top row */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={3}
@@ -393,38 +364,33 @@ export default function ShopDetailPage() {
           justifyContent="space-between"
           mb={2}
         >
-          <Box>
+          <Box minWidth={0}>
             <Typography variant="h6" noWrap>
               {shop.shopName}
             </Typography>
             <Typography color="text.secondary" noWrap>
-              Contact: {shop.contactName}
+              {shop.contactName}
             </Typography>
             <Chip
-              label={shop.status}
+              label={shop.status === "active" ? "Active" : "Inactive"}
               color={shop.status === "active" ? "success" : "default"}
               size="small"
               sx={{ mt: 1 }}
             />
           </Box>
 
-          <Stack direction="row" spacing={1}>
-            {/* <AppButton variant="outlined" onClick={() => { }}>
-              Contact
-            </AppButton> */}
-            <AppButton
-              color="primary"
-              variant="contained"
-              onClick={handleEditOpen}
-            >
-              Edit Shop
-            </AppButton>
-          </Stack>
+          <AppButton
+            color="primary"
+            variant="contained"
+            onClick={handleEditOpen}
+          >
+            Edit Shop
+          </AppButton>
         </Stack>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Shop Info */}
+        {/* Details */}
         <List disablePadding>
           <ListItem>
             <ListItemText primary="Shop Code" secondary={shop.code} />
@@ -625,8 +591,8 @@ export default function ShopDetailPage() {
               From: <strong>{originalCode}</strong> → To: <strong>{pendingCodeChange}</strong>
             </Typography>
           </Box>
-          <Typography variant="body2" color="warning.main">
-            ⚠️ This will change the shop's code and its record URL.
+          <Typography variant="body2" color="info.main">
+            ℹ️ Cancel to revert the shop code to its original value.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ pr: 3, pb: 2 }}>
@@ -659,7 +625,5 @@ export default function ShopDetailPage() {
         </Alert>
       </Snackbar>
     </Box>
-
-
   );
 }
