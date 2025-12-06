@@ -301,7 +301,7 @@ export default function WorkOrdersPage() {
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onSortChange={handleSortChange}
-        onRowClick={(row) => router.push(`/workorder/${row.code}`)}
+        onRowClick={(row) => router.push(`/workorder/${row.id}`)}
       />
 
       {/* Add Work Order Dialog (copy-paste UI) */}

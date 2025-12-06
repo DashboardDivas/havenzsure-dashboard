@@ -56,7 +56,7 @@ export default function SearchBar({
         value={filter}
         onChange={(val) => setFilter(val as FilterOption)}
         options={[
-          { label: "Work Order ID", value: "workOrder" },
+          { label: "Work Order Code", value: "workOrder" },
           { label: "Customer Name", value: "customer" },
         ]}
         sx={{
@@ -70,7 +70,7 @@ export default function SearchBar({
       <StyledInputBase
         placeholder={
           filter === "workOrder"
-            ? "Search by Work Order ID…"
+            ? "Search by Work Order Code…"
             : "Search by Customer Name…"
         }
         value={query}

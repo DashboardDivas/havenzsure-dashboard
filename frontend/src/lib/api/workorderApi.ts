@@ -1,4 +1,5 @@
 //workorderApi.ts —— frontend-only adapter (no backend changes)
+import { UUID } from "crypto";
 import { getAuth } from "firebase/auth";
 
 const API_BASE =
@@ -23,7 +24,7 @@ const getAuthHeaders = async (): Promise<HeadersInit> => {
 
 // ========== Normalized types for UI ==========
 export interface WorkOrderListItem {
-  id: string;
+  id: UUID;
   code: string;
   status: string;
   createdAt?: string;
@@ -44,6 +45,8 @@ export interface WorkOrderDetail extends WorkOrderListItem {
   dateUpdated?: string;
   customerPhone?: string;
   customerAddress?: string;
+  shopCode?: string;
+  shopName?: string;
   // ...add optional fields here safely
 }
 
@@ -78,10 +81,15 @@ export interface VehicleIntake {
   color: string;
 }
  
+export interface ShopIntake {
+  shopCode: string;
+}
+
 export interface IntakePayload {
   customer: CustomerIntake;
   vehicle: VehicleIntake;
-  insurance: InsuranceIntake | null; 
+  insurance: InsuranceIntake | null;
+  shop: ShopIntake;
 }
 // ========== Helpers ==========
 
@@ -108,7 +116,12 @@ function buildFullName(
 // Accepts a backend row with many possible shapes and normalizes it
 function normalizeListRow(row: any): WorkOrderListItem {
   // IDs & codes
-  const id = coalesce(safeStr(row.work_order_id), safeStr(row.id))!;
+  const id = coalesce(
+  row.id,
+  row.work_order_id,
+  row.workOrderId,
+) as `${string}-${string}-${string}-${string}-${string}`;
+
   const code = coalesce(
     safeStr(row.work_order_code),
     safeStr(row.code),
@@ -153,9 +166,9 @@ function normalizeListRow(row: any): WorkOrderListItem {
   // Vehicle — allow nested or flat
   const veh = row.vehicle || {};
   const plateNumber = coalesce(
-    safeStr(row.plate_number),
-    safeStr(veh.plate_number),
-    safeStr(veh.plateNumber)
+    safeStr(row.plateNo),
+    safeStr(veh.plateNo),
+    safeStr(veh.plateNo)
   );
   const make = coalesce(safeStr(row.make), safeStr(veh.make));
   const model = coalesce(safeStr(row.model), safeStr(veh.model));
@@ -198,13 +211,18 @@ function normalizeDetailRow(row: any): WorkOrderDetail {
     safeStr(cust.address),
     safeStr(row.customer_address)
   );
-
+  const shop = row.shop || {};
+  const shopCode= row.shopCode;
+  const shopName= row.shopName;
+ 
   return {
     ...base,
     dateReceived,
     dateUpdated,
     customerPhone,
     customerAddress,
+    shopCode,
+    shopName,
   };
 }
 
@@ -243,13 +261,13 @@ export async function getWorkOrders(): Promise<WorkOrderListItem[]> {
  * - Accepts snake_case or camelCase
  * Backend endpoint (unchanged): GET /workorders/{code}
  */
-export async function getWorkOrderByCode(codeOrId: string): Promise<WorkOrderDetail> {
+export async function getWorkOrderByID(id: UUID): Promise<WorkOrderDetail> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(await getAuthHeaders()),
   };
 
-  const res = await fetch(`${API_BASE}/workorders/${encodeURIComponent(codeOrId)}`, {
+  const res = await fetch(`${API_BASE}/workorders/${encodeURIComponent(id)}`, {
     method: "GET",
     headers,
     cache: "no-store",
@@ -257,7 +275,7 @@ export async function getWorkOrderByCode(codeOrId: string): Promise<WorkOrderDet
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`GET /workorders/${codeOrId} failed: ${res.status} ${text}`);
+    throw new Error(`GET /workorders/${id} failed: ${res.status} ${text}`);
   }
 
   const data = await res.json();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -11,10 +11,13 @@ import {
   Stack,
   TextField,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { AppButton } from "@/components/ui/Buttons";
 import { createWorkOrder } from "@/lib/api/workorderApi"; // ✅ real API
+import { shopApi } from "@/lib/api/shopApi";
+import { Shop } from "@/types/workorder";
 
 interface WorkOrderData {
   firstName: string;
@@ -39,6 +42,7 @@ interface WorkOrderData {
   agentPhoneNumber: string;
   policyNumber: string;
   claimNumber: string;
+  shopCode: string;
 }
 
 export function WorkOrderForm() {
@@ -67,12 +71,51 @@ export function WorkOrderForm() {
     agentPhoneNumber: "",
     policyNumber: "",
     claimNumber: "",
+    shopCode: "",
   });
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof WorkOrderData, string>>
   >({});
   const [loading, setLoading] = useState(false);
+
+  // shopss
+      const [shops, setShops] = useState<Shop[]>([]);
+      const [shopsLoading, setShopsLoading] = useState(false);
+      const [shopsError, setShopsError] = useState<string | null>(null);
+    
+      // Load active shops
+      useEffect(() => {
+        const fetchShops = async () => {
+          try {
+            setShopsLoading(true);
+    
+            const response = await shopApi.getShops(500, 0);
+            // Only keep active shops
+            const rawList: any[] = Array.isArray(response.data)
+              ? response.data
+              : [];
+    
+            const activeOnly: Shop[] = rawList
+              .filter((s) => s.status === "active")
+              .map((s) => ({
+                id: String(s.id),
+                code: s.code,
+                shopName: s.shopName,
+                status: s.status,
+              }));
+    
+            setShops(activeOnly);
+          } catch (err: any) {
+            console.error("Failed to load shops", err);
+            setShopsError("Failed to load shops");
+          } finally {
+            setShopsLoading(false);
+          }
+        };
+    
+        fetchShops();
+      }, []);
 
   const handleChange = (field: keyof WorkOrderData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -152,7 +195,9 @@ export function WorkOrderForm() {
           policyNumber: formData.policyNumber,
           claimNumber: formData.claimNumber,
         },
-
+        shop: {
+          shopCode: formData.shopCode,
+        }
         //shopId: "b9d5b5ec-14d9-4ff8-9db0-8c4a2f781e61",
         //createdByUserId: "13fbd8c4-cd6a-4c4a-b4d8-b417ed14b12a",
       };
@@ -197,6 +242,7 @@ export function WorkOrderForm() {
       agentPhoneNumber: "",
       policyNumber: "",
       claimNumber: "",
+      shopCode: "",
     });
     setErrors({});
   };
@@ -542,7 +588,33 @@ export function WorkOrderForm() {
                       error={!!errors.claimNumber}
                       helperText={errors.claimNumber}
                     />
+                            {/* Shop Autocomplete (Optional) */}
+                            <Autocomplete
+                              options={shops}
+                              loading={shopsLoading}
+                              value={shops.find((s) => s.code === formData.shopCode) || null}
+                              onChange={(_, value) =>
+                                handleChange("shopCode", value ? value.code : "")
+                              }
+                              getOptionLabel={(option) => `${option.code} — ${option.shopName}`}
+                              isOptionEqualToValue={(opt, value) => opt.code === value.code}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Shop"
+                                  placeholder="Search shop by name or code"
+                                  helperText={
+                                    shopsError
+                                      ? shopsError
+                                      : "Placeholder for Shop selection"
+                                  }
+                                  error={!!shopsError}
+                                  disabled={loading}
+                                />
+                              )}
+                            />
                   </Box>
+                  
                 </Stack>
               </Box>
 
