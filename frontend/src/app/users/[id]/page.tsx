@@ -25,16 +25,18 @@ import {
   TextField,
   MenuItem,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import EmailIcon from "@mui/icons-material/Email";
 import { User, UpdateUserInput } from "@/types/user";
 import { userApi } from "@/lib/api/userApi";
-import { shopApi } from "@/lib/api/shopApi"; 
+import { shopApi } from "@/lib/api/shopApi";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
 import { formatPhone } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface Shop {
   id: string;
@@ -46,6 +48,7 @@ interface Shop {
 export default function UserProfilePage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +60,7 @@ export default function UserProfilePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
 
   // ⬅ NEW STATES FOR ACTIVE SHOPS
   const [shops, setShops] = useState<Shop[]>([]);
@@ -68,6 +72,26 @@ export default function UserProfilePage() {
     console.log("[DEV] Fake avatar upload", userId, file);
     return `https://havezsuredashboard.com/seed=${encodeURIComponent(userId)}`;
   }
+
+  // Check if current user can edit the target user
+  const canEditUser = (): boolean => {
+    if (!currentUser || !user) return false;
+
+    const currentRole = currentUser.role?.code;
+    const targetRole = user.role?.code;
+
+    // SuperAdmin can edit anyone
+    if (currentRole === "superadmin") return true;
+
+    // Admin can edit themselves (except role)
+    if (currentRole === "admin" && currentUser.id === user.id) return true;
+
+    // Admin can edit adjuster and bodyman
+    if (currentRole === "admin" && (targetRole === "adjuster" || targetRole === "bodyman")) return true;
+
+    // Admin cannot edit other admins or superadmins
+    return false;
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,6 +151,13 @@ export default function UserProfilePage() {
 
   const handleEditOpen = () => {
     if (!user) return;
+
+    // Check permission
+    if (!canEditUser()) {
+      setPermissionError("You don't have permission to edit this user");
+      return;
+    }
+
     setEditData({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -221,6 +252,17 @@ export default function UserProfilePage() {
 
   return (
     <Box p={4}>
+      {/* Permission Error Alert */}
+      {permissionError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          onClose={() => setPermissionError(null)}
+        >
+          {permissionError}
+        </Alert>
+      )}
+
       {/* Success Alert */}
       {emailSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
@@ -276,14 +318,21 @@ export default function UserProfilePage() {
             >
               {sendingEmail ? "Sending..." : "Send Password Reset Link"}
             </AppButton>
-            <AppButton
-              color="primary"
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEditOpen}
+            <Tooltip
+              title={!canEditUser() ? "You don't have permission to edit this user" : ""}
             >
-              Edit User
-            </AppButton>
+              <span>
+                <AppButton
+                  color="primary"
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={handleEditOpen}
+                  disabled={!canEditUser()}
+                >
+                  Edit User
+                </AppButton>
+              </span>
+            </Tooltip>
           </Stack>
         </Stack>
 
@@ -434,9 +483,33 @@ export default function UserProfilePage() {
                 setEditData({ ...editData, roleCode: e.target.value })
               }
               fullWidth
+              disabled={currentUser?.role?.code === "admin" && currentUser?.id === user?.id}
+              helperText={
+                currentUser?.role?.code === "admin" && currentUser?.id === user?.id
+                  ? "You cannot change your own role"
+                  : currentUser?.role?.code !== "superadmin"
+                    ? "Note: Only SuperAdmins can assign Admin or SuperAdmin roles"
+                    : ""
+              }
             >
-              <MenuItem value="superadmin">Super Administrator</MenuItem>
-              <MenuItem value="admin">Administrator</MenuItem>
+              {/* SuperAdmin option - disabled for non-superadmin users */}
+              <MenuItem
+                value="superadmin"
+                disabled={currentUser?.role?.code !== "superadmin"}
+              >
+                Super Administrator
+                {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+              </MenuItem>
+
+              {/* Admin option - disabled for non-superadmin users */}
+              <MenuItem
+                value="admin"
+                disabled={currentUser?.role?.code !== "superadmin"}
+              >
+                Administrator
+                {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+              </MenuItem>
+
               <MenuItem value="adjuster">Adjuster</MenuItem>
               <MenuItem value="bodyman">Bodyman</MenuItem>
             </TextField>
