@@ -13,11 +13,12 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
 } from 'firebase/auth';
-import { AuthUser } from '@/types/user';
+import { AuthUser, UserProfile} from '@/types/user';
 import { userApi } from '@/lib/api/userApi';
 
 interface AuthContextType {
   user: AuthUser | null;
+  profile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -33,6 +34,7 @@ const TOKEN_REFRESH_INTERVAL = 55 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -47,18 +49,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           //  Use /me endpoint to get user info.
           const currentUser = await userApi.getCurrentUser();
-          setUser(currentUser);
+          // Set current authenticated user for RBAC
+          setUser(currentUser as AuthUser);
+          // Set current user profile
+          setProfile(currentUser as UserProfile);
 
           // Setup automatic token refresh
           setupTokenRefresh(firebaseUser);
         } catch (error) {
           console.error('[Auth] Error getting user token:', error);
           setUser(null);
+          setProfile(null);
           clearTokenRefresh();
         }
       } else {
         // No Firebase user = not authenticated
         setUser(null);
+        setProfile(null);
         clearTokenRefresh();
       }
 
@@ -109,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTokenRefresh();
       await firebaseSignOut(auth);
       setUser(null);
+      setProfile(null);
       router.push('/login');
     } catch (error) {
       console.error('[Auth] Error during forced sign out:', error);
@@ -160,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       await firebaseSignOut(auth);
       setUser(null);
+      setProfile(null);
       router.push('/login');
     } catch (error: any) {
       console.error('[Auth] Sign out error:', error);
@@ -168,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

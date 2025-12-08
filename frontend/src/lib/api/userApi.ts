@@ -1,7 +1,7 @@
 // User API client for HavenzSure Dashboard
 // Handles all user-related API calls to Go backend
 
-import { User, CreateUserInput, UpdateUserInput, ApiError, UpdateCurrentUserProfileInput, AuthUser } from "@/types/user";
+import { User, CreateUserInput, UpdateUserInput, ApiError, UpdateCurrentUserProfileInput, AuthUser, MeResponse } from "@/types/user";
 import { getAuth} from "firebase/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -84,7 +84,7 @@ export const userApi = {
    /**
    * Uses Firebase token to authenticate and fetch user data from backend
    */
-  getCurrentUser: async (): Promise<AuthUser> => {
+  getCurrentUser: async (): Promise<MeResponse> => {
     const headers = await getAuthHeaders();
     
     const response = await fetch(`${API_BASE_URL}/me`, {
@@ -199,7 +199,7 @@ export const userApi = {
    * Update current user's own profile (phone, imageUrl)
    * -> PUT /me
    */
-  updateCurrentUserProfile: async (userData: UpdateCurrentUserProfileInput): Promise<AuthUser> => {
+  updateCurrentUserProfile: async (userData: UpdateCurrentUserProfileInput): Promise<MeResponse> => {
     const headers = await getAuthHeaders();
 
     const response = await fetch(`${API_BASE_URL}/me`, {
