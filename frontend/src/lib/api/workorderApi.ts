@@ -1,5 +1,5 @@
 //workorderApi.ts —— frontend-only adapter (no backend changes)
-import { UUID } from "crypto";
+// import { UUID } from "crypto";
 import { getAuth } from "firebase/auth";
 
 const API_BASE =
@@ -24,7 +24,7 @@ const getAuthHeaders = async (): Promise<HeadersInit> => {
 
 // ========== Normalized types for UI ==========
 export interface WorkOrderListItem {
-  id: UUID;
+  id: string;
   code: string;
   status: string;
   createdAt?: string;
@@ -117,10 +117,10 @@ function buildFullName(
 function normalizeListRow(row: any): WorkOrderListItem {
   // IDs & codes
   const id = coalesce(
-  row.id,
-  row.work_order_id,
-  row.workOrderId,
-) as `${string}-${string}-${string}-${string}-${string}`;
+  safeStr(row.id),  
+  safeStr(row.work_order_id),  
+  safeStr(row.workOrderId)  
+  ) as `${string}-${string}-${string}-${string}-${string}`;  
 
   const code = coalesce(
     safeStr(row.work_order_code),
@@ -211,7 +211,6 @@ function normalizeDetailRow(row: any): WorkOrderDetail {
     safeStr(cust.address),
     safeStr(row.customer_address)
   );
-  const shop = row.shop || {};
   const shopCode= row.shopCode;
   const shopName= row.shopName;
  
@@ -259,9 +258,9 @@ export async function getWorkOrders(): Promise<WorkOrderListItem[]> {
  * Get detail by code (or id), with backend’s current behavior tolerated:
  * - Accepts object or array
  * - Accepts snake_case or camelCase
- * Backend endpoint (unchanged): GET /workorders/{code}
+ * Backend endpoint (unchanged): GET /workorders/{id}
  */
-export async function getWorkOrderByID(id: UUID): Promise<WorkOrderDetail> {
+export async function getWorkOrderByID(id: string): Promise<WorkOrderDetail> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(await getAuthHeaders()),
