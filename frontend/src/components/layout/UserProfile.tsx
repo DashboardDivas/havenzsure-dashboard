@@ -153,9 +153,9 @@ export default function UserProfile({
   const handleSignOut = async () => {
     try {
       setSigningOut(true);
+      // First close the drawer
+      onClose();   
       await signOut(); // Use signOut from AuthContext        
-      onClose();                    
-      router.push("/");         
     } catch (err) {
       console.error("Failed to sign out:", err);
       alert("Sign out failed, please try again.");

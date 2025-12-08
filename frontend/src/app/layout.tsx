@@ -15,7 +15,7 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   // If on /login page → hide navbar + sidebar (DO THIS FIRST)
-  const isAuthPage = pathname === "/";
+  const isAuthPage = pathname === "/" || pathname === "/login";
   if (isAuthPage) {
     return <>{children}</>;
   }
