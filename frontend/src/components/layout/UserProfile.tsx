@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   IconButton,
@@ -51,7 +51,7 @@ export default function UserProfile({
   onClose: () => void;
 }) {
   // Context
-  const { signOut, user } = useAuth();
+  const { signOut, profile} = useAuth();
   const theme = useTheme();
   const router = useRouter();
 
@@ -59,19 +59,24 @@ export default function UserProfile({
   const [editMode, setEditMode] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false); 
-  const [phone, setPhone] = useState(user?.phone ?? "");
+   const [phone, setPhone] = useState(profile?.phone ?? "");
+
+  // Update phone state when profile changes
+  useEffect(() => {
+    setPhone(profile?.phone ?? "");
+  }, [profile]);
 
   // User data from context
   const userData = {
-    name: `${user?.firstName} ${user?.lastName}`,
-    role: user?.role.name || "User",
-    employeeId: user?.code,
-    email: user?.email,
+    name: `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim(),
+    role: profile?.roleName || "User",
+    employeeId: profile?.code,
+    email: profile?.email,
     phone: phone ? phone : "N/A",
-    shop: user?.shop?.name || "No Shop Assigned",    
+    shop: profile?.shopName || "No Shop Assigned",    
     location: "N/A",  // we don't have location in user table with current db
-    joinedDate: user?.createdAt?.split("T")[0] || "", // place create date here for now
-    avatar: user?.imageUrl || "/admin.jpg",
+    joinedDate: profile?.createdAt? profile.createdAt.split("T")[0]: "", // place create date here for now
+    avatar: profile?.imageUrl || "/admin.jpg",
   };
 
   const contactItems = [
@@ -148,9 +153,9 @@ export default function UserProfile({
   const handleSignOut = async () => {
     try {
       setSigningOut(true);
+      // First close the drawer
+      onClose();   
       await signOut(); // Use signOut from AuthContext        
-      onClose();                    
-      router.push("/");         
     } catch (err) {
       console.error("Failed to sign out:", err);
       alert("Sign out failed, please try again.");

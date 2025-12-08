@@ -27,7 +27,7 @@ const ALL_ROLES: RoleCode[] = [
 // core role checking function
 // ensure the user's role is in the allowed list
 export function hasRole(user: AuthUser | null, allowed: RoleCode[]): boolean {
-  const code = user?.role?.code;
+  const code = user?.roleCode;
   if (!code || !ALL_ROLES.includes(code as RoleCode)) return false;
   return allowed.includes(code as RoleCode);
 }

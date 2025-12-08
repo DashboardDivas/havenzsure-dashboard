@@ -88,7 +88,7 @@ export default function Sidebar({
   const { user } = useAuth(); 
 
   const mainMenuItems = [
-    { name: "Dashboard", icon: <Dashboard />, href: "/" },
+    { name: "Dashboard", icon: <Dashboard />, href: "/dashboard" },
     { name: "Work Orders", icon: <Assignment />, href: "/workorder" },
 
     // only admin/superadmin can see Users

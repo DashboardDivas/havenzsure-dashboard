@@ -13,6 +13,7 @@ export interface Shop {
   name: string;
 }
 
+// Main User interface
 export interface User {
   id: string;
   code: string;
@@ -54,8 +55,28 @@ export interface UpdateCurrentUserProfileInput {
   imageUrl?: string;
 }
 
-// Auth user from token
-export type AuthUser = Pick<User, "id" | "code" | "firstName" | "lastName" | "email" |"phone" | "imageUrl" | "createdAt" | "role" | "shop">;
+// Interface for "me" API response
+export interface MeResponse {
+  id: string;
+  code: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  imageUrl?: string;
+  roleCode: string;
+  roleName: string;
+  shopId?: string;
+  shopCode?: string;
+  shopName?: string;
+  createdAt: string;
+}
+
+// For authentication context
+export type AuthUser = Pick<MeResponse, "id" | "email" | "roleCode" | "shopId">;
+
+// For Profile page
+export type UserProfile = MeResponse;
 
 // API response types
 export interface UserListResponse {
