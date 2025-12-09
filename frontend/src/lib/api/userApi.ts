@@ -37,7 +37,7 @@ const handleApiError = async (response: Response): Promise<never> => {
     errorMessage = `HTTP ${response.status}: ${response.statusText}`;
   }
 
-  throw new Error(errorMessage);
+  return Promise.reject(errorMessage);
 };
 
 // User API functions

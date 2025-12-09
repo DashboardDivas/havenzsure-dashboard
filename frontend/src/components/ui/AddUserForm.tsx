@@ -77,7 +77,7 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
 
         setShops(activeOnly);
       } catch (err: any) {
-        console.error("Failed to load shops", err);
+        console.log("Failed to load shops", err);
         setShopsError("Failed to load shops");
       } finally {
         setShopsLoading(false);
@@ -152,7 +152,7 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
 
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      console.error("Failed to create user:", err);
+      console.log("Failed to create user:", err);
       setError(err.message || "Failed to create user");
     } finally {
       setLoading(false);
