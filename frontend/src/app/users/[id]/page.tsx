@@ -77,7 +77,8 @@ export default function UserProfilePage() {
   const canEditUser = (): boolean => {
     if (!currentUser || !user) return false;
 
-    const currentRole = currentUser.role?.code;
+    // const currentRole = currentUser.role?.code;
+    const currentRole = currentUser.roleCode;
     const targetRole = user.role?.code;
 
     // SuperAdmin can edit anyone
