@@ -44,7 +44,7 @@ export default function UsersPage() {
       const data = await userApi.list(); 
       setUsers(data);
     } catch (err: any) {
-      console.error("Failed to fetch users:", err);
+      console.log("Failed to fetch users:", err);
       setError(err.message || "Failed to load users");
     } finally {
       setLoading(false);

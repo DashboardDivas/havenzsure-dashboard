@@ -26,6 +26,7 @@ import {
   MenuItem,
   Alert,
   Tooltip,
+  Snackbar
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
@@ -59,13 +60,30 @@ export default function UserProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const [emailSuccess, setEmailSuccess] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+
+  // snackbar
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "warning">("success");
 
   // ⬅ NEW STATES FOR ACTIVE SHOPS
   const [shops, setShops] = useState<Shop[]>([]);
   const [shopsLoading, setShopsLoading] = useState(false);
   const [shopsError, setShopsError] = useState<string | null>(null);
+
+  // Snackbar helpers
+  const showSuccess = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("success");
+    setSnackOpen(true);
+  };
+
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackSeverity("error");
+    setSnackOpen(true);
+  };
 
   // Fake upload function
   async function uploadUserAvatarFake(userId: string, file: File): Promise<string> {
@@ -77,7 +95,6 @@ export default function UserProfilePage() {
   const canEditUser = (): boolean => {
     if (!currentUser || !user) return false;
 
-    // const currentRole = currentUser.role?.code;
     const currentRole = currentUser.roleCode;
     const targetRole = user.role?.code;
 
@@ -112,7 +129,7 @@ export default function UserProfilePage() {
         const data = await userApi.getById(id as string);
         setUser(data);
       } catch (err: any) {
-        console.error("Failed to fetch user:", err);
+        console.log("Failed to load user:", err);
         setError(err.message || "Failed to load user");
       } finally {
         setLoading(false);
@@ -188,9 +205,10 @@ export default function UserProfilePage() {
       const updated = await userApi.update(user.id, payload);
       setUser(updated);
       setOpenEdit(false);
+      showSuccess("User updated successfully!");
     } catch (err: any) {
-      console.error("Failed to update user:", err);
-      alert(err.message || "Failed to update user");
+      console.log("Failed to save user changes:", err);
+      showError("Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -203,14 +221,16 @@ export default function UserProfilePage() {
       setLoading(true);
       if (user.isActive) {
         await userApi.deactivate(user.id);
+        showSuccess("User deactivated successfully!");
       } else {
         await userApi.reactivate(user.id);
+        showSuccess("User reactivated successfully!");
       }
       const refreshed = await userApi.getById(user.id);
       setUser(refreshed);
     } catch (err: any) {
-      console.error("Failed to toggle user status:", err);
-      alert(err.message || "Failed to update status");
+      console.log("Failed to toggle user status:", err);
+      showError("Failed to update status");
     } finally {
       setLoading(false);
     }
@@ -222,11 +242,10 @@ export default function UserProfilePage() {
     try {
       setSendingEmail(true);
       await userApi.resendPasswordLink(user.id);
-      setEmailSuccess(true);
-      setTimeout(() => setEmailSuccess(false), 5000);
+      showSuccess("Password setup email sent successfully!");
     } catch (err: any) {
-      console.error("Failed to resend password link:", err);
-      alert(err.message || "Failed to send email");
+      console.log("Failed to resend password link:", err);
+      showError("Failed to send email");
     } finally {
       setSendingEmail(false);
     }
@@ -261,13 +280,6 @@ export default function UserProfilePage() {
           onClose={() => setPermissionError(null)}
         >
           {permissionError}
-        </Alert>
-      )}
-
-      {/* Success Alert */}
-      {emailSuccess && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          Password setup email sent successfully!
         </Alert>
       )}
 
@@ -315,7 +327,7 @@ export default function UserProfilePage() {
               variant="outlined"
               startIcon={<EmailIcon />}
               onClick={handleResendPasswordLink}
-              disabled={sendingEmail}
+              disabled={sendingEmail || !canEditUser()}
             >
               {sendingEmail ? "Sending..." : "Send Password Reset Link"}
             </AppButton>
@@ -402,6 +414,7 @@ export default function UserProfilePage() {
                   size="small"
                   variant="outlined"
                   onClick={handleToggleStatus}
+                  disabled={!canEditUser()}
                 >
                   {user.isActive ? "Deactivate" : "Reactivate"}
                 </AppButton>
@@ -484,11 +497,13 @@ export default function UserProfilePage() {
                 setEditData({ ...editData, roleCode: e.target.value })
               }
               fullWidth
-              disabled={currentUser?.role?.code === "admin" && currentUser?.id === user?.id}
+              disabled={
+                currentUser?.roleCode === "admin" && currentUser?.id === user?.id
+              }
               helperText={
-                currentUser?.role?.code === "admin" && currentUser?.id === user?.id
+                currentUser?.roleCode === "admin" && currentUser?.id === user?.id
                   ? "You cannot change your own role"
-                  : currentUser?.role?.code !== "superadmin"
+                  : currentUser?.roleCode !== "superadmin"
                     ? "Note: Only SuperAdmins can assign Admin or SuperAdmin roles"
                     : ""
               }
@@ -496,19 +511,19 @@ export default function UserProfilePage() {
               {/* SuperAdmin option - disabled for non-superadmin users */}
               <MenuItem
                 value="superadmin"
-                disabled={currentUser?.role?.code !== "superadmin"}
+                disabled={currentUser?.roleCode !== "superadmin"}
               >
                 Super Administrator
-                {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+                {currentUser?.roleCode !== "superadmin" && " (Restricted)"}
               </MenuItem>
 
               {/* Admin option - disabled for non-superadmin users */}
               <MenuItem
                 value="admin"
-                disabled={currentUser?.role?.code !== "superadmin"}
+                disabled={currentUser?.roleCode !== "superadmin"}
               >
                 Administrator
-                {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+                {currentUser?.roleCode !== "superadmin" && " (Restricted)"}
               </MenuItem>
 
               <MenuItem value="adjuster">Adjuster</MenuItem>
@@ -517,20 +532,15 @@ export default function UserProfilePage() {
 
             <TextField
               select
-              label="Shop Code (Optional)"
+              label="Shop Code"
               value={editData.shopCode || ""}
               onChange={(e) =>
                 setEditData({ ...editData, shopCode: e.target.value })
               }
               fullWidth
-              helperText={
-                shopsError
-                  ? shopsError
-                  : ""
-              }
-              disabled={shopsLoading}
+              helperText={shopsError ? shopsError : ""}
+              disabled={shopsLoading || currentUser?.roleCode !== "superadmin"}
             >
-              <MenuItem value="">No Shop Assigned</MenuItem>
 
               {shops.map((shop) => (
                 <MenuItem key={shop.id} value={shop.code}>
@@ -555,6 +565,20 @@ export default function UserProfilePage() {
           </AppButton>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackOpen(false)}
+          severity={snackSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

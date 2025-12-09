@@ -202,7 +202,7 @@ export default function UserProfile({
       />
 
       {/* Main content */}
-      <Box sx={{ px: 3, mt: -6, position: "relative", pb: 3 }}>
+      <Box sx={{ px: 3, mt: 2, position: "relative", pb: 3 }}>
         {/* Avatar + edit button */}
         <Box
           sx={{
