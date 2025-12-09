@@ -45,18 +45,27 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
 
   // Auth is ready, render the app
   return (
-    <>
-      <Navbar onMenuClick={() => setSidebarOpen(true)} />
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+  <>
+    <Navbar onMenuClick={() => setSidebarOpen(true)} />
+    <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+    <Box
+      component="main"
+      sx={{
+        minHeight: "100vh",
+        bgcolor: (theme) => theme.palette.background.default,
+      }}
+    >
       {children}
-    </>
-  );
+    </Box>
+  </>
+ );
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ margin: 0 }}>
         <CustomThemeProvider>
           <AuthProvider>
             <AuthLayout>{children}</AuthLayout>

@@ -42,7 +42,7 @@ import {
 import AppTable, { Column } from "@/components/ui/Table";
 import { AppButton } from "@/components/ui/Buttons";
 import StatusChip from "@/components/ui/StatusChip";
-import CustomThemeProvider from "@/context/ThemeContext";
+import { useTheme } from "@mui/material/styles";
 
 
 type WorkOrderStatus = "approved" | "pending" | "rejected" | "review";
@@ -149,6 +149,8 @@ const useWorkOrderId = () => {
 
 
 export default function DashboardPage(): JSX.Element {
+  const theme = useTheme();
+
   // table state
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
@@ -299,11 +301,10 @@ export default function DashboardPage(): JSX.Element {
   };
 
   return (
-    <CustomThemeProvider>
-      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+      <Box sx={{ minHeight: "100vh", background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)` }}>
         <Container maxWidth="xl" sx={{ py: 4 }}>
           {/* Quick Actions */}
-          <Card sx={{ mb: 4, background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)" }}>
+          <Card sx={{ mb: 4, background: theme.palette.background.paper, backdropFilter: "blur(10px)" }}>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
                 <Box>
@@ -330,7 +331,7 @@ export default function DashboardPage(): JSX.Element {
           {/* Metrics */}
           <Box sx={{ display: "grid", gap: 3, mb: 4, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" } }}>
             {metrics.map((m) => (
-              <Card key={m.title} sx={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", transition: "all 0.3s", "&:hover": { transform: "translateY(-8px)", boxShadow: 6 } }}>
+              <Card key={m.title} sx={{ background: theme.palette.background.paper, backdropFilter: "blur(10px)", transition: "all 0.3s", "&:hover": { transform: "translateY(-8px)", boxShadow: 6 } }}>
                 <CardContent>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <Box sx={{ flex: 1 }}>
@@ -360,7 +361,7 @@ export default function DashboardPage(): JSX.Element {
 
           {/* Charts */}
           <Box sx={{ display: "grid", gap: 3, mb: 4, gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" } }}>
-            <Card sx={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)" }}>
+            <Card sx={{ background: theme.palette.background.paper, backdropFilter: "blur(10px)" }}>
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                   <Typography variant="h6">Analytics Overview</Typography>
@@ -419,7 +420,7 @@ export default function DashboardPage(): JSX.Element {
               </CardContent>
             </Card>
 
-            <Card sx={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)" }}>
+            <Card sx={{ background: theme.palette.background.paper, backdropFilter: "blur(10px)" }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Claims Distribution
@@ -460,7 +461,7 @@ export default function DashboardPage(): JSX.Element {
           </Box>
 
           {/* Recent Work Orders */}
-          <Card sx={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)" }}>
+          <Card sx={{ background: theme.palette.background.paper, backdropFilter: "blur(10px)" }}>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                 <Box>
@@ -524,6 +525,5 @@ export default function DashboardPage(): JSX.Element {
           </Alert>
         </Snackbar>
       </Box>
-    </CustomThemeProvider>
   );
 }
