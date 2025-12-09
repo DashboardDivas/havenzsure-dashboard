@@ -4,7 +4,7 @@
 // Date: 2025-11-23
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Stack,
@@ -86,6 +86,42 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
 
     fetchShops();
   }, []);
+
+  // Filter shops based on current user's role
+  const visibleShops = useMemo(() => {
+    // No shops loaded
+    if (!shops.length) return shops;
+
+    // No current user info
+    if (!currentUser) return shops;
+
+    // SuperAdmin keep as is: can see all shops
+    if (currentUser.roleCode !== "admin") {
+      return shops;
+    }
+
+    // Admin: only show their own shop
+    const adminShopId = currentUser.shopId;
+
+    if (!adminShopId) {
+      // This theoretically shouldn't happen, fallback to all to avoid empty dropdown
+      return shops;
+    }
+
+    return shops.filter((shop) => shop.id === adminShopId);
+  }, [shops, currentUser]);
+
+  // Auto-assign shopCode for admin users
+   useEffect(() => {
+    if (!currentUser || currentUser.roleCode !== "admin") return;
+    if (!currentUser.shopId) return;
+    if (formData.shopCode) return; // already set
+
+    const match = shops.find((s) => s.id === currentUser.shopId);
+    if (match) {
+      setFormData((prev) => ({ ...prev, shopCode: match.code }));
+    }
+  }, [currentUser, shops, formData.shopCode]);
 
   const handleChange = (field: keyof CreateUserInput, value: string) => {
     let newValue = value;
@@ -244,8 +280,6 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           }
           disabled={loading}
         >
-
-
           {/* SuperAdmin option - only enabled for superadmin users */}
           <MenuItem
             value="superadmin"
@@ -270,7 +304,7 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
 
         {/* Shop Autocomplete */}
         <Autocomplete
-          options={shops}
+          options={visibleShops}
           loading={shopsLoading}
           value={shops.find((s) => s.code === formData.shopCode) || null}
           onChange={(_, value) =>
@@ -281,10 +315,12 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Shop (Optional for superadmins)"
+              label="Shop (Required for non-SuperAdmin users)"
               placeholder="Search shop by name or code"
               helperText={
-                shopsError ? shopsError : "Only active shops are listed — leave empty if not assigned"
+                shopsError
+                  ? shopsError
+                  : "Only active shops are listed — leave empty if not assigned"
               }
               error={!!shopsError}
               disabled={loading}
