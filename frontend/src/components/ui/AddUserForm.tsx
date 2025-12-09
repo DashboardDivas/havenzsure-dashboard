@@ -236,34 +236,39 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           value={formData.roleCode}
           onChange={(e) => handleChange("roleCode", e.target.value)}
           error={!!errors.roleCode}
-          helperText={errors.roleCode || (currentUser?.role?.code !== "superadmin" ? "Note: Only SuperAdmins can create Admin or SuperAdmin users" : "")}
+          helperText={
+            errors.roleCode ||
+            (currentUser?.roleCode !== "superadmin"
+              ? "Note: Only SuperAdmins can create Admin or SuperAdmin users"
+              : "")
+          }
           disabled={loading}
         >
-          <MenuItem value="">Select Role</MenuItem>
+
 
           {/* SuperAdmin option - only enabled for superadmin users */}
           <MenuItem
             value="superadmin"
-            disabled={currentUser?.role?.code !== "superadmin"}
+            disabled={currentUser?.roleCode !== "superadmin"}
           >
             Super Administrator
-            {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+            {currentUser?.roleCode !== "superadmin" && " (Restricted)"}
           </MenuItem>
 
           {/* Admin option - only enabled for superadmin users */}
           <MenuItem
             value="admin"
-            disabled={currentUser?.role?.code !== "superadmin"}
+            disabled={currentUser?.roleCode !== "superadmin"}
           >
             Administrator
-            {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+            {currentUser?.roleCode !== "superadmin" && " (Restricted)"}
           </MenuItem>
 
           <MenuItem value="adjuster">Adjuster (Insurance Claims)</MenuItem>
           <MenuItem value="bodyman">Bodyman (Repair Technician)</MenuItem>
         </TextField>
 
-        {/* Shop Autocomplete (Optional) */}
+        {/* Shop Autocomplete */}
         <Autocomplete
           options={shops}
           loading={shopsLoading}
@@ -276,12 +281,10 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Shop (Optional for non-admins)"
+              label="Shop (Optional for superadmins)"
               placeholder="Search shop by name or code"
               helperText={
-                shopsError
-                  ? shopsError
-                  : "Only active shops are listed — leave empty if not assigned"
+                shopsError ? shopsError : "Only active shops are listed — leave empty if not assigned"
               }
               error={!!shopsError}
               disabled={loading}
