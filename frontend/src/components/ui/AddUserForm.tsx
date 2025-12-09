@@ -19,6 +19,7 @@ import { CreateUserInput } from "@/types/user";
 import { userApi } from "@/lib/api/userApi";
 import { shopApi } from "@/lib/api/shopApi";
 import { formatPhone } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface AddUserFormProps {
   onSuccess?: () => void;
@@ -32,6 +33,7 @@ interface Shop {
 }
 
 export function AddUserForm({ onSuccess }: AddUserFormProps) {
+  const { user: currentUser } = useAuth();
   const [formData, setFormData] = useState<CreateUserInput>({
     email: "",
     firstName: "",
@@ -172,6 +174,8 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
             label="First Name"
             required
             fullWidth
+            id="first-name"
+            name="firstName"
             value={formData.firstName}
             onChange={(e) => handleChange("firstName", e.target.value)}
             error={!!errors.firstName}
@@ -182,6 +186,8 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
             label="Last Name"
             required
             fullWidth
+            id="last-name"
+            name="lastName"
             value={formData.lastName}
             onChange={(e) => handleChange("lastName", e.target.value)}
             error={!!errors.lastName}
@@ -196,6 +202,8 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           required
           fullWidth
           type="email"
+          id="email"
+          name="email"
           value={formData.email}
           onChange={(e) => handleChange("email", e.target.value)}
           error={!!errors.email}
@@ -207,6 +215,8 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
         <TextField
           label="Phone (Optional)"
           fullWidth
+          id="phone"
+          name="phone"
           value={formData.phone}
           onChange={(e) => handleChange("phone", e.target.value)}
           error={!!errors.phone}
@@ -221,14 +231,34 @@ export function AddUserForm({ onSuccess }: AddUserFormProps) {
           label="Role"
           required
           fullWidth
+          id="role-select"
+          name="roleCode"
           value={formData.roleCode}
           onChange={(e) => handleChange("roleCode", e.target.value)}
           error={!!errors.roleCode}
-          helperText={errors.roleCode}
+          helperText={errors.roleCode || (currentUser?.role?.code !== "superadmin" ? "Note: Only SuperAdmins can create Admin or SuperAdmin users" : "")}
           disabled={loading}
         >
           <MenuItem value="">Select Role</MenuItem>
-          <MenuItem value="admin">Administrator</MenuItem>
+
+          {/* SuperAdmin option - only enabled for superadmin users */}
+          <MenuItem
+            value="superadmin"
+            disabled={currentUser?.role?.code !== "superadmin"}
+          >
+            Super Administrator
+            {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+          </MenuItem>
+
+          {/* Admin option - only enabled for superadmin users */}
+          <MenuItem
+            value="admin"
+            disabled={currentUser?.role?.code !== "superadmin"}
+          >
+            Administrator
+            {currentUser?.role?.code !== "superadmin" && " (Restricted)"}
+          </MenuItem>
+
           <MenuItem value="adjuster">Adjuster (Insurance Claims)</MenuItem>
           <MenuItem value="bodyman">Bodyman (Repair Technician)</MenuItem>
         </TextField>
