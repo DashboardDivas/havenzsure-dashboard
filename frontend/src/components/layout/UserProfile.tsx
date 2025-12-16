@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   IconButton,
   Box,
@@ -19,6 +18,7 @@ import {
   Switch,
   TextField,
   useTheme,
+  Avatar
 } from "@mui/material";
 import {
   Bell,
@@ -40,8 +40,17 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { userApi } from "@/lib/api/userApi";
+import { alpha } from "@mui/material/styles";
 
 const phoneRegex = /^\d{3}-\d{3}-\d{4}$/; // Simple regex for XXX-XXX-XXXX format
+
+function getInitials(first?: string, last?: string, email?: string) {
+  const a = (first ?? "").trim();
+  const b = (last ?? "").trim();
+  if (a || b) return `${a.charAt(0)}${b.charAt(0)}`.toUpperCase();
+  const e = (email ?? "").trim();
+  return e ? e.charAt(0).toUpperCase() : "?";
+}
 
 export default function UserProfile({
   open,
@@ -59,7 +68,9 @@ export default function UserProfile({
   const [editMode, setEditMode] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false); 
-   const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [phone, setPhone] = useState(profile?.phone ?? "");
+  const initials = getInitials(profile?.firstName, profile?.lastName, profile?.email);
+
 
   // Update phone state when profile changes
   useEffect(() => {
@@ -212,34 +223,25 @@ export default function UserProfile({
             mb: 2,
           }}
         >
-          {/* ✅ Optimized Next.js Image Avatar */}
-          <Box
+
+          <Avatar
+            src={profile?.imageUrl || undefined}
+            alt={userData.name}
             sx={{
               width: 110,
               height: 110,
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "4px solid white",
+              border: `3px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+              color: theme.palette.text.primary,
               boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-              backgroundColor: "white",
+              backgroundColor: theme.palette.background.paper,
               flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
+              fontSize: 40,
+              fontWeight: 700,
             }}
           >
-            <Image
-              src={userData.avatar}
-              alt={userData.name}
-              fill
-              priority
-              style={{
-                objectFit: "cover",
-                objectPosition: "center center", // ✅ ensures face is centered
-              }}
-            />
-          </Box>
+            {initials}
+          </Avatar>
+
 
           <Box sx={{ flex: 1, pb: 1 }}>
             <Button

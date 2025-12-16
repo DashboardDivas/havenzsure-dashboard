@@ -88,7 +88,7 @@ export default function UserProfilePage() {
   // Fake upload function
   async function uploadUserAvatarFake(userId: string, file: File): Promise<string> {
     console.log("[DEV] Fake avatar upload", userId, file);
-    return `https://havezsuredashboard.com/seed=${encodeURIComponent(userId)}`;
+    return URL.createObjectURL(file);
   }
 
   // Check if current user can edit the target user
