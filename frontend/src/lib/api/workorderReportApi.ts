@@ -56,9 +56,7 @@ export async function downloadWorkOrderPdf(id: string) {
 export async function sendWorkOrderReportEmail(id: string): Promise<{ message: string }> {
   const res = await fetch(`${API_BASE}/workorders/${encodeURIComponent(id)}/email-report`, {
     method: "POST",
-    headers: {
-      ...(await getAuthHeaders()),
-    },
+    headers: await getAuthHeaders(),
   });
 
   if (!res.ok) {
