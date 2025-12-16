@@ -18,6 +18,18 @@ import SearchBar from "@/components/ui/SearchBar";
 import UserProfile from "./UserProfile";
 import NotificationPanel from "@/components/ui/NotificationPanel";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"; 
+import { alpha } from "@mui/material/styles";
+
+
+function getInitials(first?: string, last?: string, email?: string) {
+  const a = (first ?? "").trim();
+  const b = (last ?? "").trim();
+  if (a || b) return `${a.charAt(0)}${b.charAt(0)}`.toUpperCase();
+
+  const e = (email ?? "").trim();
+  return e ? e.charAt(0).toUpperCase() : "?";
+}
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const theme = useTheme();
@@ -25,12 +37,13 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { profile } = useAuth(); 
+
   const [filter, setFilter] = useState<"workOrder" | "customer">("workOrder");
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  // Sync search bar state with URL parameters
   React.useEffect(() => {
     const q = searchParams.get("q");
     const f = searchParams.get("filter");
@@ -45,10 +58,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
       params.set("filter", filter);
       router.push(`/workorder?${params.toString()}`);
     } else {
-      // If query is empty, maybe just go to workorder page without params?
       router.push("/workorder");
     }
   };
+
+  const initials = getInitials(profile?.firstName, profile?.lastName, profile?.email);
+  const avatarSrc = profile?.imageUrl?.trim() ? profile.imageUrl : undefined;
+  const displayName =
+    `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim() || "User";
 
   return (
     <>
@@ -62,7 +79,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
-          {/* Left: Menu + Logo */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton edge="start" onClick={onMenuClick}>
               <MenuIcon />
@@ -75,7 +91,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </Typography>
           </Box>
 
-          {/* Center: SearchBar */}
           {pathname !== "/dashboard" && pathname !== "/" && (
             <SearchBar
               filter={filter}
@@ -86,43 +101,44 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             />
           )}
 
-          {/* Right: Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <ThemeMenuButton />
 
-            {/* 🔔 Notifications */}
             <IconButton onClick={() => setNotificationsOpen(true)}>
               <Badge badgeContent={3} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
 
-            {/* Notification Panel */}
             <NotificationPanel
               open={notificationsOpen}
               onClose={() => setNotificationsOpen(false)}
             />
 
-            {/* Avatar → Profile */}
             <IconButton onClick={() => setProfileOpen(true)}>
               <Avatar
-                alt="User Avatar"
-                src="/admin.jpg"
+                alt={displayName}
+                src={avatarSrc}
                 sx={{
                   width: 36,
                   height: 36,
-                  border: `2px solid ${theme.palette.divider}`,
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
                   cursor: "pointer",
                   transition: "transform 0.2s",
                   "&:hover": { transform: "scale(1.05)" },
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.background.paper,
+                  fontSize: 14,
+                  fontWeight: 700,
                 }}
-              />
+              >
+                {initials}
+              </Avatar>
             </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Profile Drawer */}
       <UserProfile open={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
   );

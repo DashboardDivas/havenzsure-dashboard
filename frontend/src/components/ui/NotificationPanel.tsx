@@ -244,6 +244,10 @@ export default function NotificationPanel({
 
                   <ListItemText
                     sx={{ pr: 1 }}
+                    slotProps={{
+                      primary: { component: "div" },
+                      secondary: { component: "div" },
+                    }}
                     primary={
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                         <Typography fontWeight={600} sx={{ fontSize: 15, flex: 1 }}>
