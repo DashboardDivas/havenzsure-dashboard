@@ -30,6 +30,8 @@ import {
 import { AppButton } from "@/components/ui/Buttons";
 import { userApi } from "@/lib/api/userApi";
 import { getWorkOrderByID, WorkOrderDetail } from "@/lib/api/workorderApi";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { downloadWorkOrderPdf } from "@/lib/api/workorderReportApi";
 import { User } from "@/types/user";
 import StatusChip from "@/components/ui/StatusChip";
 import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
@@ -53,7 +55,7 @@ export default function OverviewTab() {
       try {
         const [usersData, workOrderData] = await Promise.all([
           userApi.list(),
-          getWorkOrderByID(id as `${string}-${string}-${string}-${string}-${string}`),
+          getWorkOrderByID(id as string),
         ]);
         setUsers(usersData);
         setWorkOrder(workOrderData);
@@ -128,6 +130,14 @@ export default function OverviewTab() {
           >
             Assign
           </AppButton>
+          <AppButton
+              variant="outlined"
+              startIcon={<PictureAsPdfIcon />}
+              onClick={() => id && downloadWorkOrderPdf(id as string)}
+              disabled={!id}
+            >
+              Download PDF
+            </AppButton>
           <AppButton variant="outlined" color="error" startIcon={<Delete />}>
             Delete
           </AppButton>
