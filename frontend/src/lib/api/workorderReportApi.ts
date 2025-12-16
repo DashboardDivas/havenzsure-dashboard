@@ -52,3 +52,19 @@ export async function downloadWorkOrderPdf(id: string) {
   a.remove();
   window.URL.revokeObjectURL(url);
 }
+// POST /workorders/{id}/email-report
+export async function sendWorkOrderReportEmail(id: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE}/workorders/${encodeURIComponent(id)}/email-report`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeaders()),
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`POST /workorders/${id}/email-report failed: ${res.status} ${text}`);
+  }
+
+  return res.json().catch(() => ({ message: "sent" }));
+}
