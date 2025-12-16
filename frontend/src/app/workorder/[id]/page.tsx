@@ -13,7 +13,6 @@ import PaymentTab from "./PaymentTab";
 import { AppButton } from "@/components/ui/Buttons";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useParams } from "next/navigation";
-import { downloadWorkOrderPdf } from "@/lib/api/workorderReportApi";
 
 
 // Icons
