@@ -10,6 +10,11 @@ import QuoteTab from "./QuoteTab";
 import LogTab from "./LogTab";
 import PaymentTab from "./PaymentTab";
 
+import { AppButton } from "@/components/ui/Buttons";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { useParams } from "next/navigation";
+
+
 // Icons
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
@@ -22,6 +27,9 @@ import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
 export default function WorkOrderPage() {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState("overview");
+  const params = useParams<{ id: string }>();
+  const workOrderId = params?.id;
+
 
   const tabs = [
     { value: "overview", label: "Overview", icon: <VisibilityIcon fontSize="small" /> },

@@ -30,9 +30,13 @@ import {
 import { AppButton } from "@/components/ui/Buttons";
 import { userApi } from "@/lib/api/userApi";
 import { getWorkOrderByID, WorkOrderDetail } from "@/lib/api/workorderApi";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { downloadWorkOrderPdf } from "@/lib/api/workorderReportApi";
 import { User } from "@/types/user";
 import StatusChip from "@/components/ui/StatusChip";
 import { Upload, Delete, CheckCircle, Repeat } from "@mui/icons-material";
+import EmailIcon from "@mui/icons-material/Email";
+import { sendWorkOrderReportEmail } from "@/lib/api/workorderReportApi";
 
 
 export default function OverviewTab() {
@@ -45,6 +49,9 @@ export default function OverviewTab() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function loadData() {
@@ -53,7 +60,7 @@ export default function OverviewTab() {
       try {
         const [usersData, workOrderData] = await Promise.all([
           userApi.list(),
-          getWorkOrderByID(id as `${string}-${string}-${string}-${string}-${string}`),
+          getWorkOrderByID(id as string),
         ]);
         setUsers(usersData);
         setWorkOrder(workOrderData);
@@ -65,6 +72,20 @@ export default function OverviewTab() {
     }
     loadData();
   }, [id]);
+
+  const handleSendEmail = async () => {
+  if (!id) return;
+  setSendingEmail(true);
+  setEmailError(null);
+  try {
+    await sendWorkOrderReportEmail(id as string);
+    alert("Report emailed to customer.");
+  } catch (e: any) {
+    setEmailError(e?.message ?? "Failed to send email");
+  } finally {
+    setSendingEmail(false);
+  }
+};
 
   const handleAssignClick = () => setAssignDialogOpen(true);
 
@@ -128,6 +149,23 @@ export default function OverviewTab() {
           >
             Assign
           </AppButton>
+          <AppButton
+              variant="outlined"
+              startIcon={<PictureAsPdfIcon />}
+              onClick={() => id && downloadWorkOrderPdf(id as string)}
+              disabled={!id}
+            >
+              Download PDF
+            </AppButton>
+            <AppButton
+              variant="contained"
+              startIcon={<EmailIcon />}
+              onClick={handleSendEmail}
+              disabled={!id || sendingEmail}
+            >
+              {sendingEmail ? "Sending..." : "Email Customer"}
+            </AppButton>
+
           <AppButton variant="outlined" color="error" startIcon={<Delete />}>
             Delete
           </AppButton>
